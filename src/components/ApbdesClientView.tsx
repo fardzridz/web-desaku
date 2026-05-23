@@ -12,7 +12,7 @@ function formatRupiah(number: number | string) {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(num);
-  } catch (e) {
+  } catch {
     return "Rp 0,00";
   }
 }

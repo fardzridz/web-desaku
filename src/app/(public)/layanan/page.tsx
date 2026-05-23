@@ -132,7 +132,7 @@ export default async function LayananPage(props: PageProps) {
           ) : layananData.length > 0 ? (
             <div className="bg-surface-container-low rounded-xl p-8 text-center border border-dashed border-outline-variant">
                <span className="material-symbols-outlined text-4xl text-outline mb-2">search_off</span>
-               <p className="text-on-surface-variant font-body">Tidak ada data layanan untuk kategori <span className="font-bold">"{currentCategory}"</span>.</p>
+               <p className="text-on-surface-variant font-body">Tidak ada data layanan untuk kategori <span className="font-bold">&quot;{currentCategory}&quot;</span>.</p>
             </div>
           ) : (
             // Fallback content if empty

@@ -1,7 +1,7 @@
 "use server";
 
 import { getAkunAdmin } from "@/lib/sheets";
-import { cookies } from "next/headers";
+import { clearAdminSession, setAdminSession } from "@/lib/adminAuth";
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 
@@ -21,8 +21,6 @@ export async function loginAction(prevState: unknown, formData: FormData) {
 
   try {
     const akunList = await getAkunAdmin();
-    const isLocalhost = process.env.NODE_ENV !== "production";
-
     // Validate against Google Sheets data
     const match = akunList.find((akun) => akun.email.toLowerCase() === email.toLowerCase());
 
@@ -62,15 +60,7 @@ export async function loginAction(prevState: unknown, formData: FormData) {
       return { success: false, message: "Kata sandi yang Anda masukkan salah!" };
     }
 
-    // Set secure cookie
-    const cookieStore = await cookies();
-    cookieStore.set("admin_session", match.email, {
-      httpOnly: true,
-      secure: !isLocalhost,
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 7, // 1 week
-    });
+    await setAdminSession(match.email);
     isSuccess = true;
 
   } catch (error) {
@@ -87,7 +77,6 @@ export async function loginAction(prevState: unknown, formData: FormData) {
 }
 
 export async function logoutAction() {
-  const cookieStore = await cookies();
-  cookieStore.delete("admin_session");
+  await clearAdminSession();
   redirect("/admin/login");
 }

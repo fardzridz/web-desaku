@@ -8,7 +8,7 @@ interface RichTextEditorProps {
   defaultValue?: string;
 }
 
-export default function RichTextEditor({ placeholder, name, defaultValue }: RichTextEditorProps) {
+export default function RichTextEditor({ name, defaultValue }: RichTextEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 

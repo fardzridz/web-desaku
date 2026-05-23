@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getGoogleSheets } from "@/lib/googleClient";
+import { requireAdmin } from "@/lib/adminAuth";
 
 export interface ActionState {
   success: boolean;
@@ -11,6 +12,8 @@ export interface ActionState {
 const SHEET_ID = process.env.GOOGLE_SHEETS_ID;
 
 export async function saveIdentitasAction(prevState: ActionState, formData: FormData): Promise<ActionState> {
+  await requireAdmin();
+
   const namaDesa = formData.get("namaDesa") as string;
   const alamat = formData.get("alamat") as string;
   const noWa = formData.get("noWa") as string;

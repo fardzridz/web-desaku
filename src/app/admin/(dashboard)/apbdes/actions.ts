@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getGoogleSheets } from "@/lib/googleClient";
+import { requireAdmin } from "@/lib/adminAuth";
 
 export interface ActionState {
   success: boolean;
@@ -17,6 +18,8 @@ function parseNum(val: unknown): number {
 }
 
 export async function saveApbdesAction(prevState: ActionState, formData: FormData): Promise<ActionState> {
+  await requireAdmin();
+
   const tahunAnggaranAsli = formData.get("tahunAnggaranAsli") as string;
   const tahun_anggaran = formData.get("tahun_anggaran") as string;
   
@@ -142,6 +145,8 @@ export async function saveApbdesAction(prevState: ActionState, formData: FormDat
 }
 
 export async function deleteApbdesAction(tahun_anggaran: string) {
+  await requireAdmin();
+
   try {
     const sheets = getGoogleSheets();
     

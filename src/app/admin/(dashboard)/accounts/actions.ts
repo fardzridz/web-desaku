@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getGoogleSheets } from "@/lib/googleClient";
+import { requireAdmin } from "@/lib/adminAuth";
 import bcrypt from "bcryptjs";
 
 export interface ActionState {
@@ -12,6 +13,8 @@ export interface ActionState {
 const SHEET_ID = process.env.GOOGLE_SHEETS_ID;
 
 export async function saveAkunAction(prevState: ActionState, formData: FormData): Promise<ActionState> {
+  await requireAdmin();
+
   const idAsli = formData.get("idAsli") as string; // email asli sebelum diedit
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
@@ -110,6 +113,8 @@ export async function saveAkunAction(prevState: ActionState, formData: FormData)
 }
 
 export async function deleteAkunAction(email: string) {
+  await requireAdmin();
+
   try {
     const sheets = getGoogleSheets();
     

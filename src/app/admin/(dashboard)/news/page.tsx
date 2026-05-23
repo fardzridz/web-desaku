@@ -1,7 +1,6 @@
 import Link from "next/link";
 import React from "react";
 import { getAllBeritaAdmin, getIdentitas } from "@/lib/sheets";
-import RichTextEditor from "@/components/RichTextEditor";
 import DeleteNewsButton from "./DeleteNewsButton";
 
 export default async function AdminNewsPage() {

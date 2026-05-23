@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useActionState, useEffect } from "react";
+import React, { useState, useActionState } from "react";
 import Link from "next/link";
 import RichTextEditor from "@/components/RichTextEditor";
 import { BeritaItem } from "@/lib/sheets";
@@ -11,18 +11,14 @@ interface NewsFormClientProps {
 }
 
 export default function NewsFormClient({ artikel }: NewsFormClientProps) {
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(() =>
+    artikel?.fotoUrl?.includes("http") ? artikel.fotoUrl : null,
+  );
   const saveStateInitial = { success: false, message: "" };
   const [saveState, saveAction, isSaving] = useActionState(
     saveNewsAction,
     saveStateInitial,
   );
-
-  useEffect(() => {
-    if (artikel && artikel.fotoUrl && artikel.fotoUrl.includes("http")) {
-      setImagePreview(artikel.fotoUrl);
-    }
-  }, [artikel]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

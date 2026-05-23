@@ -146,7 +146,7 @@ export default function SettingsForm({ initialData }: { initialData: IdentitasDa
               <textarea name="alamat" defaultValue={initialData.alamat} rows={2} className="w-full p-3 bg-surface border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:outline-none resize-none"></textarea>
             </div>
             <div className="md:col-span-2 text-xs text-stone-500 italic mt-2">
-              * Tips link Maps: Buka Google Maps - Cari lokasi desa - Klik 'Bagikan/Share' - 'Sematkan Peta/Embed' - Salin URL di dalam tag src="..." (Misal: https://www.google.com/maps/embed?pb=...)
+              * Tips link Maps: Buka Google Maps - Cari lokasi desa - Klik &apos;Bagikan/Share&apos; - &apos;Sematkan Peta/Embed&apos; - Salin URL di dalam tag src=&quot;...&quot; (Misal: https://www.google.com/maps/embed?pb=...)
             </div>
             <div className="md:col-span-2">
               <label className="block text-xs uppercase font-label font-bold text-stone-500 mb-1">URL Google Maps (Embed src)</label>

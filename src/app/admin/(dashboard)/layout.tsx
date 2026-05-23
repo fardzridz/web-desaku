@@ -1,6 +1,6 @@
 import AdminLayoutWrapper from "@/components/AdminLayoutWrapper";
 import { getIdentitas, getAkunAdmin } from "@/lib/sheets";
-import { cookies } from "next/headers";
+import { getAdminSession } from "@/lib/adminAuth";
 import { redirect } from "next/navigation";
 
 export const metadata = {
@@ -12,17 +12,16 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const cookieStore = await cookies();
-  const session = cookieStore.get("admin_session");
+  const session = await getAdminSession();
 
-  if (!session?.value) {
+  if (!session) {
     redirect("/admin/login");
   }
 
   const identitas = await getIdentitas();
   // Fetch account data and find the specific user who logged in
   const akunData = await getAkunAdmin();
-  const adminAccount = akunData.find(a => a.email.toLowerCase() === session.value.toLowerCase()) || null;
+  const adminAccount = akunData.find(a => a.email.toLowerCase() === session.email.toLowerCase()) || null;
 
   return (
     <AdminLayoutWrapper identitas={identitas} adminAccount={adminAccount}>

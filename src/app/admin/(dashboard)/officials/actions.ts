@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getGoogleSheets } from "@/lib/googleClient";
+import { requireAdmin } from "@/lib/adminAuth";
 
 export interface ActionState {
   success: boolean;
@@ -11,6 +12,8 @@ export interface ActionState {
 const SHEET_ID = process.env.GOOGLE_SHEETS_ID;
 
 export async function saveOfficialAction(prevState: ActionState, formData: FormData): Promise<ActionState> {
+  await requireAdmin();
+
   const idAsli = formData.get("idAsli") as string;
   const nama = formData.get("nama") as string;
   const jabatan = formData.get("jabatan") as string;
@@ -108,6 +111,8 @@ export async function saveOfficialAction(prevState: ActionState, formData: FormD
 }
 
 export async function deleteOfficialAction(nama: string) {
+  await requireAdmin();
+
   try {
     const sheets = getGoogleSheets();
     

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getGoogleSheets } from "@/lib/googleClient";
+import { requireAdmin } from "@/lib/adminAuth";
 import { redirect } from "next/navigation";
 
 export interface ActionState {
@@ -12,6 +13,8 @@ export interface ActionState {
 const SHEET_ID = process.env.GOOGLE_SHEETS_ID;
 
 export async function saveNewsAction(prevState: ActionState, formData: FormData): Promise<ActionState> {
+  await requireAdmin();
+
   const idAsli = formData.get("id") as string;
   const judul = formData.get("judul") as string;
   const status = formData.get("status") as string;
@@ -85,9 +88,9 @@ export async function saveNewsAction(prevState: ActionState, formData: FormData)
     }
 
     revalidatePath("/admin/news");
-    revalidatePath("/berita");
+    revalidatePath("/kabar-desa");
     revalidatePath("/");
-    revalidatePath(`/berita/${slug}`);
+    revalidatePath(`/kabar-desa/${slug}`);
     
     isSuccess = true;
   } catch (error: unknown) {
@@ -103,6 +106,8 @@ export async function saveNewsAction(prevState: ActionState, formData: FormData)
 }
 
 export async function deleteNewsAction(id: string) {
+  await requireAdmin();
+
   try {
     const sheets = getGoogleSheets();
     
@@ -150,10 +155,10 @@ export async function deleteNewsAction(id: string) {
     });
 
     revalidatePath("/admin/news");
-    revalidatePath("/berita");
+    revalidatePath("/kabar-desa");
     revalidatePath("/");
     return { success: true, message: `Artikel berhasil dihapus!` };
-  } catch (error: unknown) {
+  } catch {
     return { success: false, message: "Gagal menghapus data di cloud." };
   }
 }

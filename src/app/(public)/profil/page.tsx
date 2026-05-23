@@ -37,18 +37,6 @@ export default async function ProfilPage() {
   );
   const kaurList = perangkatData.filter((p) => !matchedNames.includes(p.nama));
 
-  // Helper icons for Kaur (just decorative mapping based on index or title)
-  const getKaurIcon = (jabatan: string) => {
-    const lJabatan = jabatan.toLowerCase();
-    if (lJabatan.includes("pembangunan")) return "agriculture";
-    if (lJabatan.includes("kesra") || lJabatan.includes("sosial"))
-      return "volunteer_activism";
-    if (lJabatan.includes("tata usaha") || lJabatan.includes("tu"))
-      return "description";
-    if (lJabatan.includes("keamanan")) return "security";
-    return "group"; // default icon
-  };
-
   return (
     <>
       {/* Hero Section */}
@@ -231,14 +219,14 @@ export default async function ProfilPage() {
             {namaDesa}.
           </p>
         </div>
-        <div className="space-y-12 md:space-y-16">
+        <div className="space-y-10 md:space-y-14">
           {/* Leader */}
           {kades && (
             <div className="flex justify-center">
-              <div className="bg-surface-container-lowest p-4 rounded-[2rem] shadow-sm hover:shadow-xl transition-shadow w-full max-w-sm text-center">
-                <div className="aspect-[3/4] rounded-[1.5rem] overflow-hidden mb-6">
+              <div className="bg-surface-container-lowest p-4 rounded-[1.5rem] shadow-sm hover:shadow-xl transition-shadow w-full max-w-[260px] sm:max-w-[280px] text-center border border-outline-variant/20">
+                <div className="mx-auto w-full max-w-[210px] sm:max-w-[220px] aspect-[3/4] rounded-xl overflow-hidden mb-5 bg-surface-container">
                   <img
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover object-top"
                     alt={kades.jabatan}
                     src={kades.fotoUrl || "https://placeholder.co/400"}
                   />
@@ -254,12 +242,12 @@ export default async function ProfilPage() {
           )}
           {/* Secondary Level */}
           {(sekdes || bendahara) && (
-            <div className="grid grid-cols-2 gap-4 md:gap-8 max-w-4xl mx-auto">
+            <div className="grid grid-cols-2 gap-4 sm:gap-6 md:gap-8 max-w-3xl mx-auto">
               {sekdes && (
-                <div className="bg-surface-container-lowest p-3 md:p-4 rounded-3xl md:rounded-[2rem] shadow-sm flex flex-col text-center border border-outline-variant/20 hover:shadow-xl transition-shadow">
-                  <div className="w-full aspect-[3/4] rounded-[1.2rem] md:rounded-2xl overflow-hidden flex-shrink-0 mb-3 md:mb-4 bg-surface-container">
+                <div className="bg-surface-container-lowest p-3 sm:p-4 rounded-[1.25rem] md:rounded-[1.5rem] shadow-sm flex flex-col text-center border border-outline-variant/20 hover:shadow-xl transition-shadow min-w-0">
+                  <div className="mx-auto w-full max-w-[150px] sm:max-w-[170px] md:max-w-[190px] aspect-[3/4] rounded-xl overflow-hidden flex-shrink-0 mb-3 md:mb-4 bg-surface-container">
                     <img
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover object-top"
                       alt={sekdes.jabatan}
                       src={
                         sekdes.fotoUrl ||
@@ -278,10 +266,10 @@ export default async function ProfilPage() {
                 </div>
               )}
               {bendahara && (
-                <div className="bg-surface-container-lowest p-3 md:p-4 rounded-3xl md:rounded-[2rem] shadow-sm flex flex-col text-center border border-outline-variant/20 hover:shadow-xl transition-shadow">
-                  <div className="w-full aspect-[3/4] rounded-[1.2rem] md:rounded-2xl overflow-hidden flex-shrink-0 mb-3 md:mb-4 bg-surface-container">
+                <div className="bg-surface-container-lowest p-3 sm:p-4 rounded-[1.25rem] md:rounded-[1.5rem] shadow-sm flex flex-col text-center border border-outline-variant/20 hover:shadow-xl transition-shadow min-w-0">
+                  <div className="mx-auto w-full max-w-[150px] sm:max-w-[170px] md:max-w-[190px] aspect-[3/4] rounded-xl overflow-hidden flex-shrink-0 mb-3 md:mb-4 bg-surface-container">
                     <img
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover object-top"
                       alt={bendahara.jabatan}
                       src={
                         bendahara.fotoUrl ||
@@ -302,15 +290,15 @@ export default async function ProfilPage() {
             </div>
           )}
           {/* Departments (Staff Lainnya) */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mt-4 md:mt-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 mt-4 md:mt-8">
             {kaurList.map((kaur, idx) => (
               <div
                 key={idx}
-                className="bg-surface-container-lowest p-3 md:p-4 rounded-3xl md:rounded-[2rem] shadow-sm flex flex-col text-center border border-outline-variant/20 hover:shadow-xl transition-shadow"
+                className="bg-surface-container-lowest p-3 sm:p-4 rounded-[1.25rem] md:rounded-[1.5rem] shadow-sm flex flex-col text-center border border-outline-variant/20 hover:shadow-xl transition-shadow min-w-0"
               >
-                <div className="w-full aspect-[3/4] rounded-[1.2rem] md:rounded-2xl overflow-hidden flex-shrink-0 mb-3 md:mb-4 bg-surface-container">
+                <div className="mx-auto w-full max-w-[145px] sm:max-w-[165px] md:max-w-[180px] aspect-[3/4] rounded-xl overflow-hidden flex-shrink-0 mb-3 md:mb-4 bg-surface-container">
                   <img
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover object-top"
                     alt={kaur.jabatan}
                     src={
                       kaur.fotoUrl ||

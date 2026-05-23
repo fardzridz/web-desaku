@@ -5,6 +5,8 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import type { IdentitasData, AkunItem } from "@/lib/sheets";
 import { logoutAction } from "@/app/admin/login/actions";
 
+const IDLE_TIMEOUT_MS = 15 * 60 * 1000;
+
 export default function AdminLayoutWrapper({ 
   children,
   identitas,
@@ -19,8 +21,6 @@ export default function AdminLayoutWrapper({
 
   // --- Idle Auto-Logout Logic (15 Menit) ---
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const IDLE_TIMEOUT_MS = 15 * 60 * 1000; // 15 menit tanpa aktivitas
-
   const resetTimer = useCallback(() => {
     if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
     idleTimerRef.current = setTimeout(() => {

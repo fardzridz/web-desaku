@@ -298,7 +298,7 @@ export default function ProfilAccordion() {
                       <h4 className="font-bold text-lg mb-2 text-white">Fasilitas Keagamaan</h4>
                       <p className="text-sm opacity-90 leading-relaxed text-white">
                          Kehidupan spiritual difasilitasi dengan baik melalui tersedianya 6 buah Masjid
-                         Jami' dan 33 Mushola/Langgar.
+                         Jami&apos; dan 33 Mushola/Langgar.
                       </p>
                     </div>
                     <div className="flex-1 border-t md:border-t-0 md:border-l border-white/20 pt-4 md:pt-0 md:pl-6 w-full flex flex-col justify-center">

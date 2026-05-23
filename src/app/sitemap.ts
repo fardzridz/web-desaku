@@ -40,7 +40,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         if (!isNaN(parsedDate.getTime())) {
           lastMod = parsedDate;
         }
-      } catch (e) {
+      } catch {
         // Abaikan dan gunakan default now()
       }
 

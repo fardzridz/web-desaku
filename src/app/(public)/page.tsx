@@ -1,20 +1,16 @@
 import {
   getBerita,
-  getIdentitas,
   getPerangkat,
-  getLayanan,
 } from "@/lib/sheets";
 import Link from "next/link";
 import heroImg from "@/assets/images/hero.jpg";
 import AnimatedCounter from "@/components/AnimatedCounter";
 
 export default async function Home() {
-  const [beritaData, identitasData, perangkatData, layananDataSemua] =
+  const [beritaData, perangkatData] =
     await Promise.all([
       getBerita(),
-      getIdentitas(),
       getPerangkat(),
-      getLayanan(),
     ]);
 
   // Ambil 3 berita terbaru untuk layout warta desa

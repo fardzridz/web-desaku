@@ -55,7 +55,13 @@ export async function getLatestNews(): Promise<NewsItem[]> {
       imageUrl: row[4] || "/placeholder.jpg",
     }));
   } catch (error) {
-    console.error("❌ Error fetching Google Sheets:", error);
+    const message =
+      error instanceof Error
+        ? error.message
+            .replace(/key=[^&\s]+/g, "key=[redacted]")
+            .replace(/spreadsheets\/[^/]+/g, "spreadsheets/[redacted]")
+        : String(error);
+    console.error("❌ Error fetching Google Sheets:", message);
     return []; // Return array kosong jika gagal (graceful degradation)
   }
 }

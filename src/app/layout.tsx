@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Manrope } from "next/font/google";
 import "./globals.css";
-import Link from "next/link";
-import Navbar from "@/components/Navbar";
 import { getIdentitas } from "@/lib/sheets";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });

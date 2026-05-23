@@ -302,7 +302,7 @@ export default async function PemerintahanPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {perangkatData.length > 0 ? (
               perangkatData.map((pegawai, index) => {
                 const isKades = pegawai.jabatan
@@ -311,25 +311,27 @@ export default async function PemerintahanPage() {
                 return (
                   <div
                     key={index}
-                    className="bg-surface-container rounded-2xl overflow-hidden hover:shadow-lg transition-all group border border-outline-variant/20"
+                    className="bg-surface-container rounded-[1.25rem] md:rounded-2xl overflow-hidden hover:shadow-lg transition-all group border border-outline-variant/20 min-w-0"
                   >
-                    <div className="w-full h-56 md:h-64 bg-stone-200 relative overflow-hidden flex items-end justify-center">
+                    <div className="w-full bg-stone-200 relative overflow-hidden flex items-center justify-center p-3 sm:p-4">
+                      <div className="w-full max-w-[145px] sm:max-w-[165px] md:max-w-[180px] aspect-[3/4] rounded-xl overflow-hidden bg-stone-300">
                       <img
                         src={pegawai.fotoUrl}
                         alt={pegawai.nama}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform bg-stone-300"
+                        className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform"
                       />
+                      </div>
                       {isKades && (
                         <div className="absolute top-2 right-2 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded">
                           PIMPINAN
                         </div>
                       )}
                     </div>
-                    <div className="p-5 text-center bg-surface w-full z-10 relative">
-                      <h3 className="font-bold text-on-surface font-headline leading-tight mb-1">
+                    <div className="p-4 md:p-5 text-center bg-surface w-full z-10 relative">
+                      <h3 className="font-bold text-on-surface font-headline leading-tight mb-1 text-sm md:text-base">
                         {pegawai.nama}
                       </h3>
-                      <p className="text-xs font-bold text-primary tracking-wider uppercase">
+                      <p className="text-[10px] md:text-xs font-bold text-primary tracking-wider uppercase leading-tight">
                         {pegawai.jabatan}
                       </p>
                     </div>

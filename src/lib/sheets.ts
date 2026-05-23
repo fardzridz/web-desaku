@@ -1,3 +1,5 @@
+import { unstable_rethrow } from "next/navigation";
+
 export interface AkunItem {
   email: string;
   password: string;
@@ -77,6 +79,16 @@ export interface IdentitasData {
 const SHEET_ID = process.env.GOOGLE_SHEETS_ID;
 const API_KEY = process.env.GOOGLE_SHEETS_API_KEY;
 
+function toSafeErrorMessage(error: unknown): string {
+  if (!(error instanceof Error)) {
+    return String(error);
+  }
+
+  return error.message
+    .replace(/key=[^&\s]+/g, "key=[redacted]")
+    .replace(/spreadsheets\/[^/]+/g, "spreadsheets/[redacted]");
+}
+
 // Memperbaiki link Google Drive agar support ditampilkan dalam elemen <img> dalam resolusi tinggi
 function parseDriveUrl(url: string): string {
   if (!url) return "";
@@ -139,6 +151,8 @@ async function fetchFromSheet(
     // Memotong baris pertama karena itu adalah header kolom
     return data.values ? data.values.slice(1) : [];
   } catch (error) {
+    unstable_rethrow(error);
+
     if (retries > 0) {
        console.warn(`⏳ Fetch error pada tab "${tabName}". Mencoba lagi dalam ${delay}ms...`);
        await new Promise((resolve) => setTimeout(resolve, delay));
@@ -146,7 +160,7 @@ async function fetchFromSheet(
     }
     console.error(
       `❌ Error sistem saat fetch ${tabName}:`,
-      error instanceof Error ? error.message : error,
+      toSafeErrorMessage(error),
     );
     return [];
   }

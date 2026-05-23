@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useActionState, useEffect } from "react";
+import React, { useState, useActionState } from "react";
 import { AkunItem } from "@/lib/sheets";
 import { saveAkunAction, deleteAkunAction } from "./actions";
 
@@ -22,21 +22,14 @@ export default function AccountsManager({
   // Quick Client-Side Action Hack for local testing
   const [localData, setLocalData] = useState<AkunItem[]>(initialData);
 
-  useEffect(() => {
-    // Apabila masuk ke mode edit, atur ulang pratinjau gambar ke foto bawaan
-    if (editingItem && editingItem.fotoUrl) {
-      setImagePreview(editingItem.fotoUrl);
-    } else {
-      setImagePreview(null);
-    }
-  }, [editingItem]);
-
   const handleEditClick = (item: AkunItem) => {
     setEditingItem(item);
+    setImagePreview(item.fotoUrl || null);
   };
 
   const cancelEdit = () => {
     setEditingItem(null);
+    setImagePreview(null);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
