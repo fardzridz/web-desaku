@@ -31,3 +31,4 @@ jobs:
         run: npx opennextjs-cloudflare deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ce00e6ead1ba8d89965409f098181a86
