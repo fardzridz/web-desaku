@@ -100,7 +100,7 @@ export default function SettingsForm({ initialData }: { initialData: IdentitasDa
             <label className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 px-4 py-2 rounded-lg cursor-pointer text-sm font-semibold transition-colors flex items-center gap-2">
               <span className="material-symbols-outlined text-[18px]">upload</span>
               Ganti Logo
-              <input type="file" name="logoDesaUrl" accept="image/*" className="hidden" onChange={handleFotoChange} />
+              <input type="file" name="logoDesaUrl" accept="image/png, image/jpeg, image/webp" className="hidden" onChange={handleFotoChange} />
             </label>
             <p className="text-xs text-stone-500 mt-2 text-center">Format disarankan: PNG Transparan atau JPG. Maks 5MB.</p>
           </div>

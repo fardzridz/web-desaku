@@ -113,6 +113,37 @@ function parseDriveUrl(url: string): string {
 // Berita
 // ============================================================
 
+/**
+ * Mengubah string tanggal ("2026-04-26" atau "30 Agustus 2026") menjadi
+ * angka yang bisa dibandingkan (epoch hari, YYYYMMDD). Mengembalikan 0 jika
+ * tidak bisa diparse — tanggal "0" akan dianggap paling lama.
+ */
+function parseTanggalKey(tanggal: string): number {
+  if (!tanggal) return 0;
+
+  const iso = tanggal.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (iso) {
+    return Number(`${iso[1]}${iso[2]}${iso[3]}`);
+  }
+
+  const bulanIndex = [
+    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+    "Juli", "Agustus", "September", "Oktober", "November", "Desember",
+  ];
+  const idn = tanggal.match(/^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})$/);
+  if (idn) {
+    const bulan = bulanIndex.findIndex(
+      (b) => b.toLowerCase() === idn[2]?.toLowerCase()
+    );
+    if (bulan >= 0) {
+      const hari = String(Number(idn[1])).padStart(2, "0");
+      return Number(`${idn[3]}${String(bulan + 1).padStart(2, "0")}${hari}`);
+    }
+  }
+
+  return 0;
+}
+
 async function getBeritaUncached(): Promise<BeritaItem[]> {
   const db = await getDb();
   const { results } = await db
@@ -132,7 +163,11 @@ async function getBeritaUncached(): Promise<BeritaItem[]> {
       penulis: string;
     }>();
 
-  return results.map((r) => ({
+  const sorted = [...results].sort(
+    (a, b) => parseTanggalKey(b.tanggal) - parseTanggalKey(a.tanggal)
+  );
+
+  return sorted.map((r) => ({
     id: r.id,
     tanggal: r.tanggal || "-",
     judul: r.judul || "Tanpa Judul",
@@ -174,7 +209,11 @@ export async function getAllBeritaAdmin(): Promise<BeritaItem[]> {
       penulis: string;
     }>();
 
-  return results.map((r) => ({
+  const sorted = [...results].sort(
+    (a, b) => parseTanggalKey(b.tanggal) - parseTanggalKey(a.tanggal)
+  );
+
+  return sorted.map((r) => ({
     id: r.id,
     tanggal: r.tanggal || "-",
     judul: r.judul || "Tanpa Judul",

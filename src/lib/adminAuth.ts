@@ -9,15 +9,10 @@ type AdminSessionPayload = {
 };
 
 function getSessionSecret() {
-  const secret =
-    process.env.ADMIN_SESSION_SECRET ||
-    process.env.GOOGLE_PRIVATE_KEY ||
-    process.env.TURNSTILE_SECRET_KEY;
-
+  const secret = process.env.ADMIN_SESSION_SECRET;
   if (!secret) {
     throw new Error("ADMIN_SESSION_SECRET belum dikonfigurasi.");
   }
-
   return secret;
 }
 

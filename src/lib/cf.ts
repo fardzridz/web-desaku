@@ -44,8 +44,16 @@ export function getMediaBaseUrl(): string {
  * Melempar error jika file bukan gambar atau melebihi batas ukuran.
  */
 export async function uploadImageToR2(file: File, folder: string): Promise<string> {
-  if (!file.type.startsWith("image/")) {
-    throw new Error("File yang diunggah bukan gambar.");
+  // Allowlist ketat — SVG sengaja TIDAK diizinkan (bisa membawa script → XSS)
+  const ALLOWED_MIME = new Set([
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/gif",
+    "image/avif",
+  ]);
+  if (!ALLOWED_MIME.has(file.type)) {
+    throw new Error("Format gambar tidak didukung. Gunakan JPG, PNG, WebP, GIF, atau AVIF.");
   }
   if (file.size > 5 * 1024 * 1024) {
     throw new Error("Ukuran gambar maksimal 5MB.");
