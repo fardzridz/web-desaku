@@ -1,4 +1,4 @@
-import { getIdentitas } from "@/lib/sheets";
+import { getIdentitas } from "@/lib/db";
 import { Mail, Phone, MapPin, Clock, MessageSquare } from "lucide-react";
 
 export const metadata = {

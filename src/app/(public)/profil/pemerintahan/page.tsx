@@ -1,6 +1,6 @@
 import React from "react";
 import { Metadata } from "next";
-import { getPerangkat, getIdentitas } from "@/lib/sheets";
+import { getPerangkat, getIdentitas } from "@/lib/db";
 
 export const metadata: Metadata = {
   title: "Pemerintahan Desa - Desa Wringinanom",

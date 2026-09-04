@@ -1,4 +1,4 @@
-import { getIdentitas } from "@/lib/sheets";
+import { getIdentitas } from "@/lib/db";
 import SettingsForm from "./SettingsForm";
 
 export const metadata = {

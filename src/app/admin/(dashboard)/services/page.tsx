@@ -1,4 +1,4 @@
-import { getLayanan } from "@/lib/sheets";
+import { getLayanan } from "@/lib/db";
 import ServicesManager from "./ServicesManager";
 
 export const metadata = {

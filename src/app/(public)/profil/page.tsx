@@ -1,4 +1,4 @@
-import { getPerangkat, getIdentitas } from "@/lib/sheets";
+import { getPerangkat, getIdentitas } from "@/lib/db";
 import heroImg from "@/assets/images/hero.jpg";
 import ProfilAccordion from "./ProfilAccordion";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { type IdentitasData } from "@/lib/sheets";
+import { type IdentitasData } from "@/lib/db";
 import { saveIdentitasAction } from "./actions";
 
 // Custom SVG Icons

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import React from "react";
-import { getBeritaBySlugAdmin, getAllBeritaAdmin } from "@/lib/sheets";
+import { getBeritaBySlugAdmin, getAllBeritaAdmin } from "@/lib/db";
 import { notFound } from "next/navigation";
 import NewsFormClient from "../NewsFormClient";
 

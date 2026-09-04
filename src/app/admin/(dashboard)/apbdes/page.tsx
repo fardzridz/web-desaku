@@ -1,4 +1,4 @@
-import { getApbdes } from "@/lib/sheets";
+import { getApbdes } from "@/lib/db";
 import ApbdesManager from "./ApbdesManager";
 
 export const metadata = {

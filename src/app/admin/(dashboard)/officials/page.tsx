@@ -1,4 +1,4 @@
-import { getPerangkat } from "@/lib/sheets";
+import { getPerangkat } from "@/lib/db";
 import OfficialsManager from "./OfficialsManager";
 
 export const metadata = {

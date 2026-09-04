@@ -1,5 +1,5 @@
 import AdminLayoutWrapper from "@/components/AdminLayoutWrapper";
-import { getIdentitas, getAkunAdmin } from "@/lib/sheets";
+import { getIdentitas, getAkunByEmailSafe } from "@/lib/db";
 import { getAdminSession } from "@/lib/adminAuth";
 import { redirect } from "next/navigation";
 
@@ -19,9 +19,8 @@ export default async function DashboardLayout({
   }
 
   const identitas = await getIdentitas();
-  // Fetch account data and find the specific user who logged in
-  const akunData = await getAkunAdmin();
-  const adminAccount = akunData.find(a => a.email.toLowerCase() === session.email.toLowerCase()) || null;
+  // Fetch account data (tanpa password hash) untuk profil sidebar
+  const adminAccount = await getAkunByEmailSafe(session.email);
 
   return (
     <AdminLayoutWrapper identitas={identitas} adminAccount={adminAccount}>

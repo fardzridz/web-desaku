@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import type { IdentitasData, AkunItem } from "@/lib/sheets";
+import type { IdentitasData, SafeAkunItem } from "@/lib/db";
 import { logoutAction } from "@/app/admin/login/actions";
 
 export default function AdminSidebar({
@@ -15,7 +15,7 @@ export default function AdminSidebar({
   isOpen: boolean;
   onClose: () => void;
   identitas?: IdentitasData;
-  adminAccount?: AkunItem | null;
+  adminAccount?: SafeAkunItem | null;
 }) {
   const pathname = usePathname();
 

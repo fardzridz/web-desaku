@@ -1,15 +1,15 @@
 "use client";
 
 import React, { useState, useActionState } from "react";
-import { AkunItem } from "@/lib/sheets";
+import { SafeAkunItem } from "@/lib/db";
 import { saveAkunAction, deleteAkunAction } from "./actions";
 
 export default function AccountsManager({
   initialData,
 }: {
-  initialData: AkunItem[];
+  initialData: SafeAkunItem[];
 }) {
-  const [editingItem, setEditingItem] = useState<AkunItem | null>(null);
+  const [editingItem, setEditingItem] = useState<SafeAkunItem | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   // Save State Action
@@ -20,9 +20,9 @@ export default function AccountsManager({
   );
 
   // Quick Client-Side Action Hack for local testing
-  const [localData, setLocalData] = useState<AkunItem[]>(initialData);
+  const [localData, setLocalData] = useState<SafeAkunItem[]>(initialData);
 
-  const handleEditClick = (item: AkunItem) => {
+  const handleEditClick = (item: SafeAkunItem) => {
     setEditingItem(item);
     setImagePreview(item.fotoUrl || null);
   };
@@ -46,9 +46,8 @@ export default function AccountsManager({
 
     // Mock local data mutation agar UI berubah
     const isEditing = !!formData.get("idAsli");
-    const newItem: AkunItem = {
+    const newItem: SafeAkunItem = {
       email: formData.get("email") as string,
-      password: editingItem ? (formData.get("password") as string || editingItem.password) : (formData.get("password") as string),
       namaLengkap: formData.get("namaLengkap") as string,
       role: formData.get("role") as string,
       fotoUrl:

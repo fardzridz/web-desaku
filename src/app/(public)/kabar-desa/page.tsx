@@ -1,4 +1,4 @@
-import { getBerita, getIdentitas } from "@/lib/sheets";
+import { getBerita, getIdentitas } from "@/lib/db";
 import Link from "next/link";
 
 export const metadata = {

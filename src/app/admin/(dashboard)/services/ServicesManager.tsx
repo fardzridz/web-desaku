@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useActionState } from "react";
-import { LayananItem } from "@/lib/sheets";
+import { LayananItem } from "@/lib/db";
 import { saveLayananAction, deleteLayananAction } from "./actions";
 
 export default function ServicesManager({ initialData }: { initialData: LayananItem[] }) {
@@ -29,6 +29,7 @@ export default function ServicesManager({ initialData }: { initialData: LayananI
     // Mock local data mutation agar UI berubah walau Sheets belum jalan
     const isEditing = !!formData.get("idAsli");
     const newItem: LayananItem = {
+      id: editingItem?.id ?? Math.max(0, ...localData.map((l) => l.id)) + 1,
       namaLayanan: formData.get("namaLayanan") as string,
       syarat: formData.get("syarat") as string,
       durasi: formData.get("durasi") as string,
@@ -37,7 +38,7 @@ export default function ServicesManager({ initialData }: { initialData: LayananI
     };
 
     if (isEditing) {
-      setLocalData(prev => prev.map(p => p.namaLayanan === editingItem?.namaLayanan ? newItem : p));
+      setLocalData(prev => prev.map(p => p.id === editingItem?.id ? newItem : p));
     } else {
       setLocalData(prev => [newItem, ...prev]);
     }
@@ -47,21 +48,21 @@ export default function ServicesManager({ initialData }: { initialData: LayananI
   };
 
   // State untuk modal konfirmasi penghapusan
-  const [deleteModalTarget, setDeleteModalTarget] = useState<string | null>(null);
+  const [deleteModalTarget, setDeleteModalTarget] = useState<number | null>(null);
 
   const confirmDelete = async () => {
-    if (!deleteModalTarget) return;
-    const nama = deleteModalTarget;
+    if (deleteModalTarget === null) return;
+    const id = deleteModalTarget;
     setDeleteModalTarget(null); // Tutup modal
     
     // Call server action (akan resolve true dengan console.log)
-    await deleteLayananAction(nama);
+    await deleteLayananAction(String(id));
     
     // Mock local data deletion
-    setLocalData(prev => prev.filter(p => p.namaLayanan !== nama));
+    setLocalData(prev => prev.filter(p => p.id !== id));
     
     // Kalau yang sedang dihapus lagi di-edit, reset form-nya
-    if (editingItem?.namaLayanan === nama) {
+    if (editingItem?.id === id) {
       setEditingItem(null);
     }
   };
@@ -99,8 +100,8 @@ export default function ServicesManager({ initialData }: { initialData: LayananI
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant/10">
-                  {localData.map((item, index) => (
-                    <tr key={item.namaLayanan + index} className="hover:bg-surface-container-lowest transition-colors group">
+                  {localData.map((item) => (
+                    <tr key={item.id} className="hover:bg-surface-container-lowest transition-colors group">
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
                           <div className="flex items-center gap-2 mb-1">
@@ -129,7 +130,7 @@ export default function ServicesManager({ initialData }: { initialData: LayananI
                           <span className="material-symbols-outlined text-[18px]">edit</span>
                         </button>
                         <button 
-                          onClick={() => setDeleteModalTarget(item.namaLayanan)}
+                          onClick={() => setDeleteModalTarget(item.id)}
                           className="p-2 text-stone-400 hover:text-error transition-colors cursor-pointer"
                         >
                           <span className="material-symbols-outlined text-[18px]">delete</span>
@@ -163,9 +164,9 @@ export default function ServicesManager({ initialData }: { initialData: LayananI
             </div>
           </div>
 
-          <form action={handleFormWrapperAction} key={editingItem?.namaLayanan || "new"} className="space-y-4">
+          <form action={handleFormWrapperAction} key={editingItem?.id || "new"} className="space-y-4">
             {/* Hidden ID Field as marker for editing mode */}
-            {editingItem && <input type="hidden" name="idAsli" value={editingItem.namaLayanan} />}
+            {editingItem && <input type="hidden" name="idAsli" value={editingItem.id} />}
 
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-stone-600">Nama Layanan</label>
@@ -255,7 +256,7 @@ export default function ServicesManager({ initialData }: { initialData: LayananI
       </div>
 
       {/* Modal Konfirmasi Hapus */}
-      {deleteModalTarget && (
+      {deleteModalTarget !== null && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 whitespace-normal">
           <div className="bg-surface-container-lowest w-full max-w-md rounded-[2rem] p-8 shadow-2xl animate-in fade-in zoom-in duration-200 flex flex-col items-center text-center mx-4">
             <div className="w-16 h-16 rounded-full bg-error/10 text-error flex items-center justify-center mb-5 ring-8 ring-error/5">
@@ -263,7 +264,7 @@ export default function ServicesManager({ initialData }: { initialData: LayananI
             </div>
             <h3 className="text-xl font-headline font-bold text-on-surface mb-3">Hapus Layanan Ini?</h3>
             <p className="text-sm text-on-surface-variant mb-8 leading-relaxed w-full">
-              Layanan <span className="font-bold text-on-surface">{deleteModalTarget}</span> akan dihapus secara permanen dari daftar Google Sheets Anda.
+              Layanan ini akan dihapus secara permanen dari database desa.
             </p>
             <div className="flex w-full items-center justify-center gap-3 pt-2">
               <button 

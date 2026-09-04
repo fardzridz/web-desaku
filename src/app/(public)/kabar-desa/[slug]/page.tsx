@@ -1,6 +1,19 @@
-import { getBerita } from "@/lib/sheets";
+import { getBerita } from "@/lib/db";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import sanitizeHtml from "sanitize-html";
+
+// Whitelist tag HTML yang diizinkan dari editor konten berita
+const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
+  allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img", "figure", "figcaption", "h1", "h2"]),
+  allowedAttributes: {
+    ...sanitizeHtml.defaults.allowedAttributes,
+    img: ["src", "alt", "title", "width", "height", "loading"],
+    a: ["href", "name", "target", "rel"],
+    "*": ["style"],
+  },
+  allowedSchemes: ["http", "https", "mailto"],
+};
 
 // Generate Metadata for SEO
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -72,7 +85,7 @@ export default async function DetilBeritaPage({ params }: { params: Promise<{ sl
         {/* Content Body */}
         <div 
           className="prose prose-base md:prose-xl prose-emerald max-w-none text-on-surface-variant leading-relaxed font-body prose-headings:font-headline prose-headings:text-on-surface prose-headings:font-bold prose-a:text-primary marker:text-primary [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:my-2 [&_b]:font-bold [&_strong]:font-bold [&_i]:italic"
-          dangerouslySetInnerHTML={{ __html: berita.konten }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(berita.konten, SANITIZE_OPTIONS) }}
         />
       </article>
 

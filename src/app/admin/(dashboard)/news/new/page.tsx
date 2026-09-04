@@ -1,7 +1,7 @@
 import Link from "next/link";
 import React from "react";
 import NewsFormClient from "../NewsFormClient";
-import { getAllBeritaAdmin } from "@/lib/sheets";
+import { getAllBeritaAdmin } from "@/lib/db";
 
 export default async function AdminNewArticlePage() {
   const allBerita = await getAllBeritaAdmin();

@@ -1,19 +1,63 @@
 name = "portal-wringinanom"
-compatibility_date = "2025-04-01"
-compatibility_flags = ["nodejs_compat"]
-
 main = ".open-next/worker.js"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
 
 [assets]
 directory = ".open-next/assets"
 binding = "ASSETS"
 
-[vars]
-GOOGLE_SHEETS_ID = "1ZAw3xW97HJRhUgwYwAKm1FekRdEqFmbHcW0jvw2En8A"
+# ============================================================
+# Application database (D1) — pengganti Google Sheets
+# Buat dulu: npx wrangler d1 create desaku-db
+# ============================================================
+[[d1_databases]]
+binding = "DB"
+database_name = "desaku-db"
+database_id = "738d0a37-aeaf-46d6-8610-059bdfd37a8a"
 
-# Secrets (JANGAN masukkan nilainya di sini!)
-# Set menggunakan perintah CLI:
-#   npx wrangler secret put GOOGLE_SHEETS_API_KEY
-#   npx wrangler secret put GOOGLE_CLIENT_EMAIL
-#   npx wrangler secret put GOOGLE_PRIVATE_KEY
-#   npx wrangler secret put IMGBB_API_KEY
+# ============================================================
+# OpenNext ISR tag cache (D1) — untuk revalidateTag/revalidatePath
+# ============================================================
+[[d1_databases]]
+binding = "NEXT_TAG_CACHE_D1"
+database_name = "desaku-db"
+database_id = "738d0a37-aeaf-46d6-8610-059bdfd37a8a"
+
+# ============================================================
+# Media storage (R2) — pengganti ImgBB / Google Drive
+# Buat dulu: npx wrangler r2 bucket create desaku-assets
+# Akses publik: custom domain assets.portal-wringinanom.web.id
+# ============================================================
+[[r2_buckets]]
+binding = "MEDIA_BUCKET"
+bucket_name = "desaku-assets"
+
+# ============================================================
+# OpenNext ISR incremental cache (R2)
+# ============================================================
+[[r2_buckets]]
+binding = "NEXT_INC_CACHE_R2_BUCKET"
+bucket_name = "desaku-opennext-cache"
+
+# ============================================================
+# OpenNext revalidation queue (Durable Objects)
+# ============================================================
+[durable_objects]
+bindings = [{ name = "NEXT_CACHE_DO_QUEUE", class_name = "DOQueueHandler" }]
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["DOQueueHandler"]
+
+# ============================================================
+# Non-sensitive vars. Secrets di-set via:
+#   npx wrangler secret put ADMIN_SESSION_SECRET
+#   npx wrangler secret put TURNSTILE_SECRET_KEY
+#
+# Kalau widget Turnstile sudah dibuat (Dashboard → Turnstile),
+# isi NEXT_PUBLIC_TURNSTILE_SITE_KEY di bawah lalu rebuild+redeploy
+# (nilainya di-inline saat build).
+# ============================================================
+[vars]
+R2_ASSETS_CUSTOM_DOMAIN = "https://assets.portal-wringinanom.web.id"

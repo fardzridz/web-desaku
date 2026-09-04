@@ -1,6 +1,6 @@
 "use server";
 
-import { getAkunAdmin } from "@/lib/sheets";
+import { getAkunForLogin } from "@/lib/db";
 import { clearAdminSession, setAdminSession } from "@/lib/adminAuth";
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
@@ -20,15 +20,7 @@ export async function loginAction(prevState: unknown, formData: FormData) {
   }
 
   try {
-    const akunList = await getAkunAdmin();
-    // Validate against Google Sheets data
-    const match = akunList.find((akun) => akun.email.toLowerCase() === email.toLowerCase());
-
-    if (!match) {
-      return { success: false, message: "Alamat Email tidak ditemukan di sistem Desa!" };
-    }
-
-    // Verifikasi Turnstile
+    // Verifikasi Turnstile lebih dulu (sebelum menyentuh database)
     if (process.env.TURNSTILE_SECRET_KEY && cfTurnstileResponse) {
       const turnstileVerify = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
         method: "POST",
@@ -40,24 +32,32 @@ export async function loginAction(prevState: unknown, formData: FormData) {
           response: cfTurnstileResponse,
         }),
       });
-      
-      const turnstileResult = await turnstileVerify.json();
+
+      const turnstileResult = (await turnstileVerify.json()) as { success: boolean };
       if (!turnstileResult.success) {
         return { success: false, message: "Validasi anti-bot gagal. Silakan muat ulang halaman dan coba lagi." };
       }
     }
 
-    // Verifikasi Hash Password API secara ketat (Tanpa fallback Teks Biasa)
+    // Pesan error generik untuk mencegah email enumeration
+    const GENERIC_ERROR = "Email atau kata sandi salah!";
+
+    const match = await getAkunForLogin(email);
+
+    // Verifikasi Hash Password secara ketat (Tanpa fallback Teks Biasa)
     let isVerified = false;
-    
-    if (match.password.startsWith("$2a$") || match.password.startsWith("$2b$")) {
-      isVerified = await bcrypt.compare(password, match.password);
+
+    if (match) {
+      if (match.password.startsWith("$2a$") || match.password.startsWith("$2b$")) {
+        isVerified = await bcrypt.compare(password, match.password);
+      }
     } else {
-      return { success: false, message: "Keamanan ditolak" };
+      // Tetap lakukan komparasi dummy agar waktu respons seragam
+      await bcrypt.compare(password, "$2a$12$C6UzMDM.H6dfI/f/IKcEeO7ZBpQqGPUcc2wz1Ti3EVCw2nVuSpE1G");
     }
 
-    if (!isVerified) {
-      return { success: false, message: "Kata sandi yang Anda masukkan salah!" };
+    if (!isVerified || !match) {
+      return { success: false, message: GENERIC_ERROR };
     }
 
     await setAdminSession(match.email);

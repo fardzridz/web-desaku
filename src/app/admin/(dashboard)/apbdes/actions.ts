@@ -1,15 +1,14 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import { getGoogleSheets } from "@/lib/googleClient";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { getDb } from "@/lib/cf";
 import { requireAdmin } from "@/lib/adminAuth";
+import { CACHE_TAGS } from "@/lib/db";
 
 export interface ActionState {
   success: boolean;
   message: string;
 }
-
-const SHEET_ID = process.env.GOOGLE_SHEETS_ID;
 
 function parseNum(val: unknown): number {
   if (!val) return 0;
@@ -21,8 +20,8 @@ export async function saveApbdesAction(prevState: ActionState, formData: FormDat
   await requireAdmin();
 
   const tahunAnggaranAsli = formData.get("tahunAnggaranAsli") as string;
-  const tahun_anggaran = formData.get("tahun_anggaran") as string;
-  
+  const tahun_anggaran = (formData.get("tahun_anggaran") as string)?.trim();
+
   if (!tahun_anggaran) {
     return { success: false, message: "Tahun Anggaran tidak boleh kosong" };
   }
@@ -44,9 +43,9 @@ export async function saveApbdesAction(prevState: ActionState, formData: FormDat
   const pembiayaan_penerimaan = parseNum(formData.get("pembiayaan_penerimaan"));
   const pembiayaan_pengeluaran = parseNum(formData.get("pembiayaan_pengeluaran"));
 
-  const file_pdf = formData.get("file_pdf") as string || "#";
-  const tanggal_disahkan = formData.get("tanggal_disahkan") as string || "-";
-  const nama_pengesah = formData.get("nama_pengesah") as string || "-";
+  const file_pdf = (formData.get("file_pdf") as string) || "#";
+  const tanggal_disahkan = (formData.get("tanggal_disahkan") as string) || "-";
+  const nama_pengesah = (formData.get("nama_pengesah") as string) || "-";
 
   // Periksa Kalkulasi Otomatis secara Backend
   const total_pendapatan = pend_dana_desa + pend_add + pend_bantuan_kab + pend_bagi_hasil + pend_pades + pend_lain_lain;
@@ -55,91 +54,74 @@ export async function saveApbdesAction(prevState: ActionState, formData: FormDat
   const pembiayaan_netto = pembiayaan_penerimaan - pembiayaan_pengeluaran;
   const silpa = surplus_defisit + pembiayaan_netto;
 
-  // Format array untuk spreadsheet (harus 21 kolom sesuai sheets.ts getApbdes)
-  // Biarkan sebagai tipe Number, jangan di-toString() agar menghindari konversi lokal desimal yang keliru
-  const rowData = [
-    tahun_anggaran,
-    total_pendapatan,
-    total_belanja,
-    silpa,
-    pend_dana_desa,
-    pend_add,
-    pend_bantuan_kab,
-    pend_bagi_hasil,
-    pend_pades,
-    pend_lain_lain,
-    bel_pembangunan,
-    bel_pemerintahan,
-    bel_pembinaan,
-    bel_bencana,
-    bel_pemberdayaan,
-    pembiayaan_penerimaan,
-    pembiayaan_pengeluaran,
-    pembiayaan_netto,
-    file_pdf,
-    tanggal_disahkan,
-    nama_pengesah
-  ];
-
   try {
-    const sheets = getGoogleSheets();
+    const db = await getDb();
 
-    console.log(`[1/2] Menyinkronkan APBDes '${tahun_anggaran}' ke lembar Google Sheets...`);
-    
-    // Perlu baca API karena kita butuh tau data di line mana yang mau diedit
-    let readResponse;
-    try {
-      readResponse = await sheets.spreadsheets.values.get({
-        spreadsheetId: SHEET_ID,
-        range: "apbdes!A:A", // Cukup cari di kolom Tahun Anggaran (Kolom A)
-      });
-    } catch (err: unknown) {
-      if (err instanceof Error && err.message.includes("Unable to parse range")) {
-        return { success: false, message: "Tab 'apbdes' tidak ditemukan di Spreadsheet Anda." };
-      }
-      throw err;
-    }
-
-    const rows = readResponse.data.values || [];
-    const rowIndex = tahunAnggaranAsli ? rows.findIndex(row => row[0] === tahunAnggaranAsli) : -1;
+    const existing = tahunAnggaranAsli
+      ? await db.prepare(`SELECT tahun_anggaran FROM apbdes WHERE tahun_anggaran = ?`).bind(tahunAnggaranAsli).first<{ tahun_anggaran: string }>()
+      : null;
 
     // Jika ini adalah aksi Tambah Baru, tapi Tahun Anggaran tersebut sudah ada, kita blokir.
-    if (!tahunAnggaranAsli && rows.some(row => row[0] === tahun_anggaran)) {
-       return { success: false, message: `Tahun Anggaran ${tahun_anggaran} sudah terdaftar, silakan edit saja.` };
+    if (!existing) {
+      const duplicate = await db
+        .prepare(`SELECT tahun_anggaran FROM apbdes WHERE tahun_anggaran = ?`)
+        .bind(tahun_anggaran)
+        .first<{ tahun_anggaran: string }>();
+      if (duplicate) {
+        return { success: false, message: `Tahun Anggaran ${tahun_anggaran} sudah terdaftar, silakan edit saja.` };
+      }
     }
 
-    if (tahunAnggaranAsli && rowIndex !== -1) {
-      const exactRow = rowIndex + 1;
-      await sheets.spreadsheets.values.update({
-        spreadsheetId: SHEET_ID,
-        range: `apbdes!A${exactRow}:U${exactRow}`,
-        valueInputOption: "USER_ENTERED",
-        requestBody: { values: [rowData] },
-      });
-      console.log("✅ SUKSES: Data APBDes berhasil di-update di Sheets.");
+    if (existing) {
+      await db
+        .prepare(
+          `UPDATE apbdes SET tahun_anggaran = ?, total_pendapatan = ?, total_belanja = ?, silpa = ?,
+           pend_dana_desa = ?, pend_add = ?, pend_bantuan_kab = ?, pend_bagi_hasil = ?, pend_pades = ?, pend_lain_lain = ?,
+           bel_pembangunan = ?, bel_pemerintahan = ?, bel_pembinaan = ?, bel_bencana = ?, bel_pemberdayaan = ?,
+           pembiayaan_penerimaan = ?, pembiayaan_pengeluaran = ?, pembiayaan_netto = ?,
+           file_pdf = ?, tanggal_disahkan = ?, nama_pengesah = ?
+           WHERE tahun_anggaran = ?`
+        )
+        .bind(
+          tahun_anggaran, total_pendapatan, total_belanja, silpa,
+          pend_dana_desa, pend_add, pend_bantuan_kab, pend_bagi_hasil, pend_pades, pend_lain_lain,
+          bel_pembangunan, bel_pemerintahan, bel_pembinaan, bel_bencana, bel_pemberdayaan,
+          pembiayaan_penerimaan, pembiayaan_pengeluaran, pembiayaan_netto,
+          file_pdf, tanggal_disahkan, nama_pengesah,
+          tahunAnggaranAsli
+        )
+        .run();
     } else {
-      await sheets.spreadsheets.values.append({
-        spreadsheetId: SHEET_ID,
-        range: "apbdes!A:U",
-        valueInputOption: "USER_ENTERED",
-        // insertDataOption: "INSERT_ROWS" memastikan tertambah tanpa nindih baris kotor
-        insertDataOption: "INSERT_ROWS",
-        requestBody: { values: [rowData] },
-      });
-      console.log("✅ SUKSES: Data APBDes baru berhasil ditambahkan ke Sheets.");
+      await db
+        .prepare(
+          `INSERT INTO apbdes (tahun_anggaran, total_pendapatan, total_belanja, silpa,
+           pend_dana_desa, pend_add, pend_bantuan_kab, pend_bagi_hasil, pend_pades, pend_lain_lain,
+           bel_pembangunan, bel_pemerintahan, bel_pembinaan, bel_bencana, bel_pemberdayaan,
+           pembiayaan_penerimaan, pembiayaan_pengeluaran, pembiayaan_netto,
+           file_pdf, tanggal_disahkan, nama_pengesah)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        )
+        .bind(
+          tahun_anggaran, total_pendapatan, total_belanja, silpa,
+          pend_dana_desa, pend_add, pend_bantuan_kab, pend_bagi_hasil, pend_pades, pend_lain_lain,
+          bel_pembangunan, bel_pemerintahan, bel_pembinaan, bel_bencana, bel_pemberdayaan,
+          pembiayaan_penerimaan, pembiayaan_pengeluaran, pembiayaan_netto,
+          file_pdf, tanggal_disahkan, nama_pengesah
+        )
+        .run();
     }
 
+    revalidateTag(CACHE_TAGS.apbdes, "max");
     revalidatePath("/admin/apbdes");
-    revalidatePath("/transparansi/apbdes"); 
+    revalidatePath("/transparansi/apbdes");
     revalidatePath("/");
 
-    return { 
-      success: true, 
-      message: tahunAnggaranAsli ? "Laporan APBDes berhasil diperbarui!" : "Laporan APBDes berhasil ditambahkan!" 
+    return {
+      success: true,
+      message: tahunAnggaranAsli ? "Laporan APBDes berhasil diperbarui!" : "Laporan APBDes berhasil ditambahkan!"
     };
   } catch (error: unknown) {
-    console.error("❌ GOOGLE APIs FATAL ERROR:");
-    console.error(error); 
+    console.error("❌ DB FATAL ERROR:", error);
     return { success: false, message: "Terjadi kesalahan koneksi saat menyimpan ke cloud." };
   }
 }
@@ -148,56 +130,21 @@ export async function deleteApbdesAction(tahun_anggaran: string) {
   await requireAdmin();
 
   try {
-    const sheets = getGoogleSheets();
-    
-    // Cari barisnya berdasarkan Tahun Anggaran
-    const readResponse = await sheets.spreadsheets.values.get({
-      spreadsheetId: SHEET_ID,
-      range: "apbdes!A:A", 
-    });
+    const db = await getDb();
+    const result = await db.prepare(`DELETE FROM apbdes WHERE tahun_anggaran = ?`).bind(tahun_anggaran).run();
 
-    const rows = readResponse.data.values || [];
-    const rowIndex = rows.findIndex(row => row[0] === tahun_anggaran);
-
-    if (rowIndex === -1) {
-      return { success: false, message: "Data Tahun Anggaran tidak ditemukan di lembar kerja." };
+    if (!result.meta.changes) {
+      return { success: false, message: "Data Tahun Anggaran tidak ditemukan di database." };
     }
 
-    const spreadsheet = await sheets.spreadsheets.get({
-      spreadsheetId: SHEET_ID,
-    });
-    const sheet = spreadsheet.data.sheets?.find(s => s.properties?.title?.toLowerCase() === "apbdes");
-    const sheetId = sheet?.properties?.sheetId;
-
-    if (sheetId === undefined) {
-      return { success: false, message: "Tab apbdes tidak ditemukan di Spreadsheet." };
-    }
-
-    await sheets.spreadsheets.batchUpdate({
-      spreadsheetId: SHEET_ID,
-      requestBody: {
-        requests: [
-          {
-            deleteDimension: {
-              range: {
-                sheetId: sheetId,
-                dimension: "ROWS",
-                startIndex: rowIndex, 
-                endIndex: rowIndex + 1,
-              },
-            },
-          },
-        ],
-      },
-    });
-
+    revalidateTag(CACHE_TAGS.apbdes, "max");
     revalidatePath("/admin/apbdes");
     revalidatePath("/transparansi/apbdes");
     revalidatePath("/");
-    
+
     return { success: true, message: `Laporan APBDes Tahun ${tahun_anggaran} berhasil dihapus!` };
   } catch (error: unknown) {
-    console.error("Hapus Error:", error instanceof Error ? error.message : String(error));
+    console.error("Hapus Error:", error);
     return { success: false, message: "Gagal menghapus data di cloud." };
   }
 }

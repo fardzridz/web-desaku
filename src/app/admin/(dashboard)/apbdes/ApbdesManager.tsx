@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useActionState } from "react";
-import { ApbdesItem } from "@/lib/sheets";
+import { ApbdesItem } from "@/lib/db";
 import { saveApbdesAction, deleteApbdesAction } from "./actions";
 
 export default function ApbdesManager({ initialData }: { initialData: ApbdesItem[] }) {

@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { getApbdes } from "@/lib/sheets";
+import { getApbdes } from "@/lib/db";
 import ApbdesClientView from "@/components/ApbdesClientView";
 
 export const metadata: Metadata = {

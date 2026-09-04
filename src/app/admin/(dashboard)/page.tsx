@@ -1,6 +1,6 @@
 import Link from "next/link";
 import React from "react";
-import { getAllBeritaAdmin, getIdentitas, getPerangkat, getLayanan, getAkunAdmin } from "@/lib/sheets";
+import { getAllBeritaAdmin, getIdentitas, getPerangkat, getLayanan, getAkunAdmin } from "@/lib/db";
 
 export default async function AdminDashboardPage() {
   const [berita, identitas, perangkat, layanan, akun] = await Promise.all([

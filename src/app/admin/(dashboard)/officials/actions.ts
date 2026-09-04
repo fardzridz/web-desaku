@@ -1,21 +1,20 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import { getGoogleSheets } from "@/lib/googleClient";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { getDb, uploadImageToR2 } from "@/lib/cf";
 import { requireAdmin } from "@/lib/adminAuth";
+import { CACHE_TAGS } from "@/lib/db";
 
 export interface ActionState {
   success: boolean;
   message: string;
 }
 
-const SHEET_ID = process.env.GOOGLE_SHEETS_ID;
-
 export async function saveOfficialAction(prevState: ActionState, formData: FormData): Promise<ActionState> {
   await requireAdmin();
 
   const idAsli = formData.get("idAsli") as string;
-  const nama = formData.get("nama") as string;
+  const nama = (formData.get("nama") as string)?.trim();
   const jabatan = formData.get("jabatan") as string;
   const urutan = formData.get("urutan") as string;
   const fotoFile = formData.get("foto_file") as File;
@@ -25,145 +24,63 @@ export async function saveOfficialAction(prevState: ActionState, formData: FormD
   }
 
   try {
-    const sheets = getGoogleSheets();
-    let finalFotoUrl = "";
+    const db = await getDb();
 
-    // 1. Tangani Upload Gambar ke ImgBB (Bebas Quota)
+    const existing = idAsli
+      ? await db.prepare(`SELECT id, foto_url FROM perangkat WHERE id = ?`).bind(idAsli).first<{ id: number; foto_url: string }>()
+      : null;
+
+    // Upload gambar (jika ada file baru), else pakai foto lama
+    let finalFotoUrl = existing?.foto_url || "";
     if (fotoFile && fotoFile.size > 0 && fotoFile.name !== "undefined") {
-      console.log(`[1/4] Memulai proses upload gambar '${fotoFile.name}' (${fotoFile.size} bytes) ke server ImgBB...`);
-      
-      if (!process.env.IMGBB_API_KEY) {
-        throw new Error("Kunci IMGBB_API_KEY belum dipasang di .env.local!");
-      }
+      finalFotoUrl = await uploadImageToR2(fotoFile, "perangkat");
+    }
 
-      // Memanfaatkan objek FormData murni bawaan Javascript
-      const imgFormData = new FormData();
-      imgFormData.append("image", fotoFile);
+    const urutanNum = parseInt(urutan) || 99;
 
-      const imgResponse = await fetch(`https://api.imgbb.com/1/upload?key=${process.env.IMGBB_API_KEY}`, {
-        method: "POST",
-        body: imgFormData,
-      });
-
-      const imgDataObj = await imgResponse.json();
-
-      if (imgDataObj.success) {
-        finalFotoUrl = imgDataObj.data.url; // Langsung menghasilkan public link misal. https://i.ibb.co/xyz/...
-        console.log(`[2/4] Upload berhasil! Link Final dari ImgBB: ${finalFotoUrl}`);
-      } else {
-        throw new Error(`Gagal Upload ke ImgBB: ${imgDataObj.error?.message || "Kesalahan tidak diketahui"}`);
-      }
+    if (existing) {
+      await db
+        .prepare(`UPDATE perangkat SET nama = ?, jabatan = ?, urutan = ?, foto_url = ? WHERE id = ?`)
+        .bind(nama, jabatan, urutanNum, finalFotoUrl, existing.id)
+        .run();
     } else {
-      console.log(`[1/4] Tidak ada gambar baru yang diperbarui atau file kosong.`);
+      await db
+        .prepare(`INSERT INTO perangkat (nama, jabatan, urutan, foto_url) VALUES (?, ?, ?, ?)`)
+        .bind(nama, jabatan, urutanNum, finalFotoUrl)
+        .run();
     }
 
-    // 2. Baca isi Lembar Kerja saat ini untuk menentukan apakah Update atau Create
-    console.log(`[3/4] Menyinkronkan profil pindahan '${nama}' ke lembar Google Sheets...`);
-    
-    const readResponse = await sheets.spreadsheets.values.get({
-      spreadsheetId: SHEET_ID,
-      range: "perangkat!A:D",
-    });
-
-    const rows = readResponse.data.values || [];
-    const rowIndex = idAsli ? rows.findIndex((row: string[]) => row[0] === idAsli) : -1;
-
-    // Jika sedang memperbarui, gunakan foto lama bila foto baru tidak diunggah
-    if (idAsli && rowIndex !== -1 && finalFotoUrl === "") {
-      finalFotoUrl = rows[rowIndex][3] || "";
-    }
-
-    const rowData = [nama, jabatan, urutan, finalFotoUrl];
-
-    if (idAsli && rowIndex !== -1) {
-      // UPDATE: Baris indeks 0 di JSON adalah baris 1 di Spreadsheets
-      const exactRow = rowIndex + 1;
-      await sheets.spreadsheets.values.update({
-        spreadsheetId: SHEET_ID,
-        range: `perangkat!A${exactRow}:D${exactRow}`,
-        valueInputOption: "USER_ENTERED",
-        requestBody: { values: [rowData] },
-      });
-      console.log("✅ SUKSES: Data perangkat berhasil di-update di Sheets.");
-    } else {
-      // CREATE
-      await sheets.spreadsheets.values.append({
-        spreadsheetId: SHEET_ID,
-        range: "perangkat!A:D",
-        valueInputOption: "USER_ENTERED",
-        requestBody: { values: [rowData] },
-      });
-      console.log("✅ SUKSES: Data perangkat baru berhasil ditambahkan ke Sheets.");
-    }
-
+    revalidateTag(CACHE_TAGS.perangkat, "max");
     revalidatePath("/admin/officials");
     revalidatePath("/"); // Update beranda penduduk
 
-    return { 
-      success: true, 
-      message: idAsli ? "Profil berhasil diperbarui!" : "Aparatur baru berhasil ditambahkan!" 
+    return {
+      success: true,
+      message: idAsli ? "Profil berhasil diperbarui!" : "Aparatur baru berhasil ditambahkan!"
     };
   } catch (error: unknown) {
-    console.error("❌ GOOGLE APIs FATAL ERROR:");
-    console.error(error); // Tampilkan log raksasa detailnya
+    console.error("❌ DB ERROR:", error);
     return { success: false, message: "Terjadi kesalahan sinkronisasi gagal menyimpan." };
   }
 }
 
-export async function deleteOfficialAction(nama: string) {
+export async function deleteOfficialAction(id: string) {
   await requireAdmin();
 
   try {
-    const sheets = getGoogleSheets();
-    
-    // Cari barisnya
-    const readResponse = await sheets.spreadsheets.values.get({
-      spreadsheetId: SHEET_ID,
-      range: "perangkat!A:A", // Cukup cari di kolom nama
-    });
+    const db = await getDb();
+    const result = await db.prepare(`DELETE FROM perangkat WHERE id = ?`).bind(id).run();
 
-    const rows = readResponse.data.values || [];
-    const rowIndex = rows.findIndex((row: string[]) => row[0] === nama);
-
-    if (rowIndex === -1) {
-      return { success: false, message: "Aparatur tidak ditemukan di lembar kerja." };
+    if (!result.meta.changes) {
+      return { success: false, message: "Aparatur tidak ditemukan di database." };
     }
 
-    // Mengambil metadata spreadsheet untuk mengetahui sheetId dari tab 'perangkat'
-    const spreadsheet = await sheets.spreadsheets.get({
-      spreadsheetId: SHEET_ID,
-    });
-    const sheet = spreadsheet.data.sheets?.find(s => s.properties?.title?.toLowerCase() === "perangkat");
-    const sheetId = sheet?.properties?.sheetId;
-
-    if (sheetId === undefined) {
-      return { success: false, message: "Tab perangkat tidak ditemukan di Spreadsheet." };
-    }
-
-    // Melakukan penghapusan baris (Dimensi ROW) secara total
-    await sheets.spreadsheets.batchUpdate({
-      spreadsheetId: SHEET_ID,
-      requestBody: {
-        requests: [
-          {
-            deleteDimension: {
-              range: {
-                sheetId: sheetId,
-                dimension: "ROWS",
-                startIndex: rowIndex, // 0-indexed
-                endIndex: rowIndex + 1,
-              },
-            },
-          },
-        ],
-      },
-    });
-
+    revalidateTag(CACHE_TAGS.perangkat, "max");
     revalidatePath("/admin/officials");
-    return { success: true, message: `Aparatur ${nama} berhasil diturunkan jabatan / dihapus!` };
+    revalidatePath("/");
+    return { success: true, message: `Aparatur berhasil diturunkan jabatan / dihapus!` };
   } catch (error: unknown) {
-    const errMsg = error instanceof Error ? error.message : String(error);
-    console.error("Hapus Error:", errMsg);
+    console.error("Hapus Error:", error);
     return { success: false, message: "Gagal menghapus data di cloud." };
   }
 }

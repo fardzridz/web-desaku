@@ -1,15 +1,14 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import { getGoogleSheets } from "@/lib/googleClient";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { getDb, uploadImageToR2 } from "@/lib/cf";
 import { requireAdmin } from "@/lib/adminAuth";
+import { CACHE_TAGS } from "@/lib/db";
 
 export interface ActionState {
   success: boolean;
   message: string;
 }
-
-const SHEET_ID = process.env.GOOGLE_SHEETS_ID;
 
 export async function saveIdentitasAction(prevState: ActionState, formData: FormData): Promise<ActionState> {
   await requireAdmin();
@@ -26,7 +25,7 @@ export async function saveIdentitasAction(prevState: ActionState, formData: Form
   const instagramUrl = formData.get("instagramUrl") as string;
   const tiktokUrl = formData.get("tiktokUrl") as string;
   const websiteUrl = formData.get("websiteUrl") as string;
-  
+
   const fotoFile = formData.get("logoDesaUrl") as File;
 
   if (!namaDesa) {
@@ -34,100 +33,58 @@ export async function saveIdentitasAction(prevState: ActionState, formData: Form
   }
 
   try {
-    const sheets = getGoogleSheets();
-    let finalFotoUrl = "";
+    const db = await getDb();
 
-    // 1. Tangani Upload Gambar ke ImgBB (Bebas Quota)
+    const existing = await db
+      .prepare(`SELECT logo_desa_url, thumbnail_url FROM identitas WHERE id = 1`)
+      .first<{ logo_desa_url: string; thumbnail_url: string }>();
+
+    // 1. Tangani Upload Logo ke R2 (jika ada file baru)
+    let finalFotoUrl = existing?.logo_desa_url || "";
     if (fotoFile && fotoFile.size > 0 && fotoFile.name !== "undefined") {
-      console.log(`[1/4] Memulai proses upload gambar '${fotoFile.name}' (${fotoFile.size} bytes) ke server ImgBB...`);
-      
-      if (!process.env.IMGBB_API_KEY) {
-        throw new Error("Kunci IMGBB_API_KEY belum dipasang di .env.local!");
-      }
-
-      const imgFormData = new FormData();
-      imgFormData.append("image", fotoFile);
-
-      const imgResponse = await fetch(`https://api.imgbb.com/1/upload?key=${process.env.IMGBB_API_KEY}`, {
-        method: "POST",
-        body: imgFormData,
-      });
-
-      const imgDataObj = await imgResponse.json();
-
-      if (imgDataObj.success) {
-        finalFotoUrl = imgDataObj.data.url;
-        console.log(`[2/4] Upload berhasil! Link Final dari ImgBB: ${finalFotoUrl}`);
-      } else {
-        throw new Error(`Gagal Upload ke ImgBB: ${imgDataObj.error?.message || "Kesalahan tidak diketahui"}`);
-      }
-    } else {
-      console.log(`[1/4] Tidak ada gambar baru yang diperbarui atau file kosong.`);
+      finalFotoUrl = await uploadImageToR2(fotoFile, "logo");
     }
 
-    // 2. Baca isi Lembar Kerja saat ini
-    console.log(`[3/4] Menyinkronkan identitas desa ke lembar Google Sheets...`);
-    
-    const readResponse = await sheets.spreadsheets.values.get({
-      spreadsheetId: SHEET_ID,
-      range: "identitas!A:M",
-    });
+    // 2. Upsert single row (id = 1)
+    await db
+      .prepare(
+        `INSERT INTO identitas (id, nama_desa, alamat, no_wa, email, sambutan_kades, link_maps,
+          kecamatan, kab_kota, logo_desa_url, facebook_url, instagram_url, tiktok_url, website_url, thumbnail_url)
+         VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT(id) DO UPDATE SET
+          nama_desa = excluded.nama_desa,
+          alamat = excluded.alamat,
+          no_wa = excluded.no_wa,
+          email = excluded.email,
+          sambutan_kades = excluded.sambutan_kades,
+          link_maps = excluded.link_maps,
+          kecamatan = excluded.kecamatan,
+          kab_kota = excluded.kab_kota,
+          logo_desa_url = excluded.logo_desa_url,
+          facebook_url = excluded.facebook_url,
+          instagram_url = excluded.instagram_url,
+          tiktok_url = excluded.tiktok_url,
+          website_url = excluded.website_url,
+          thumbnail_url = excluded.thumbnail_url`
+      )
+      .bind(
+        namaDesa, alamat, noWa, email, sambutanKades, linkMaps,
+        kecamatan, kabKota, finalFotoUrl, facebookUrl, instagramUrl, tiktokUrl, websiteUrl,
+        existing?.thumbnail_url || ""
+      )
+      .run();
 
-    const rows = readResponse.data.values || [];
-    
-    // Asumsikan baris pertama (index 0) adalah header, dan baris kedua (index 1) adalah data sebenarnya
-    // Jika update, kita ambil foto url lamanya.
-    if (rows.length > 1 && finalFotoUrl === "") {
-      finalFotoUrl = rows[1][8] || ""; // Kolom I adalah index 8 (logoDesaUrl)
-    }
-
-    const rowData = [
-      namaDesa, 
-      alamat, 
-      noWa, 
-      email, 
-      sambutanKades, 
-      linkMaps, 
-      kecamatan, 
-      kabKota, 
-      finalFotoUrl, 
-      facebookUrl, 
-      instagramUrl, 
-      tiktokUrl, 
-      websiteUrl
-    ];
-
-    // Jika baris data sudah ada (rows > 1), kita UPDATE baris 2 (A2:M2)
-    if (rows.length > 1) {
-      await sheets.spreadsheets.values.update({
-        spreadsheetId: SHEET_ID,
-        range: `identitas!A2:M2`,
-        valueInputOption: "USER_ENTERED",
-        requestBody: { values: [rowData] },
-      });
-      console.log("✅ SUKSES: Data identitas berhasil di-update di Sheets.");
-    } else {
-      // Jika belum ada datanya sama sekali, kita APPEND
-      await sheets.spreadsheets.values.append({
-        spreadsheetId: SHEET_ID,
-        range: "identitas!A:M",
-        valueInputOption: "USER_ENTERED",
-        requestBody: { values: [rowData] },
-      });
-      console.log("✅ SUKSES: Data identitas baru berhasil ditambahkan ke Sheets.");
-    }
-
+    revalidateTag(CACHE_TAGS.identitas, "max");
     revalidatePath("/admin/settings");
     revalidatePath("/");
     revalidatePath("/profil");
 
-    return { 
-      success: true, 
-      message: "Profil dan identitas desa berhasil diperbarui!" 
+    return {
+      success: true,
+      message: "Profil dan identitas desa berhasil diperbarui!"
     };
   } catch (error: unknown) {
-    console.error("❌ GOOGLE APIs FATAL ERROR:");
-    console.error(error);
+    console.error("❌ DB FATAL ERROR:", error);
     return { success: false, message: "Terjadi kesalahan sinkronisasi gagal menyimpan." };
   }
 }

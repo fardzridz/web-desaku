@@ -1,4 +1,4 @@
-import { getLayanan, getIdentitas } from "@/lib/sheets";
+import { getLayanan, getIdentitas } from "@/lib/db";
 import Link from "next/link";
 
 export const metadata = {

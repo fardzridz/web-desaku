@@ -49,6 +49,20 @@ function decodeBase64Url(value: string) {
   return new TextDecoder().decode(bytes);
 }
 
+/** Constant-time string comparison untuk mencegah timing attack. */
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) {
+    // Tetap konsumsi waktu setara lalu tolak
+    crypto.subtle.digest("SHA-256", new TextEncoder().encode(a + b));
+    return false;
+  }
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
+}
+
 async function sign(value: string) {
   const key = await crypto.subtle.importKey(
     "raw",
@@ -86,7 +100,7 @@ export async function verifyAdminSession(
   if (!encodedPayload || !signature) return null;
 
   const expectedSignature = await sign(encodedPayload);
-  if (signature !== expectedSignature) return null;
+  if (!timingSafeEqual(signature, expectedSignature)) return null;
 
   try {
     const payload = JSON.parse(decodeBase64Url(encodedPayload)) as AdminSessionPayload;

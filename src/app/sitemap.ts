@@ -1,5 +1,5 @@
 import { MetadataRoute } from 'next';
-import { getBerita, getIdentitas } from '@/lib/sheets';
+import { getBerita, getIdentitas } from '@/lib/db';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const identitas = await getIdentitas();

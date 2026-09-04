@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ApbdesItem } from "@/lib/sheets";
+import { ApbdesItem } from "@/lib/db";
 
 function formatRupiah(number: number | string) {
   try {

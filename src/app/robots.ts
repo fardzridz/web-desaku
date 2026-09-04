@@ -1,5 +1,5 @@
 import { MetadataRoute } from 'next';
-import { getIdentitas } from '@/lib/sheets';
+import { getIdentitas } from '@/lib/db';
 
 export default async function robots(): Promise<MetadataRoute.Robots> {
   const identitas = await getIdentitas();

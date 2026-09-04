@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useActionState } from "react";
-import { PerangkatItem } from "@/lib/sheets";
+import { PerangkatItem } from "@/lib/db";
 import { saveOfficialAction, deleteOfficialAction } from "./actions";
 
 export default function OfficialsManager({
@@ -47,6 +47,7 @@ export default function OfficialsManager({
     // Mock local data mutation agar UI berubah
     const isEditing = !!formData.get("idAsli");
     const newItem: PerangkatItem = {
+      id: editingItem?.id ?? Math.max(0, ...localData.map((l) => l.id)) + 1,
       nama: formData.get("nama") as string,
       jabatan: formData.get("jabatan") as string,
       urutan: parseInt(formData.get("urutan") as string),
@@ -58,7 +59,7 @@ export default function OfficialsManager({
     if (isEditing) {
       setLocalData((prev) =>
         prev
-          .map((p) => (p.nama === editingItem?.nama ? newItem : p))
+          .map((p) => (p.id === editingItem?.id ? newItem : p))
           .sort((a, b) => a.urutan - b.urutan),
       );
     } else {
@@ -73,19 +74,19 @@ export default function OfficialsManager({
   };
 
   // State untuk modal konfirmasi penghapusan
-  const [deleteModalTarget, setDeleteModalTarget] = useState<string | null>(
+  const [deleteModalTarget, setDeleteModalTarget] = useState<number | null>(
     null,
   );
 
   const confirmDelete = async () => {
-    if (!deleteModalTarget) return;
-    const nama = deleteModalTarget;
+    if (deleteModalTarget === null) return;
+    const id = deleteModalTarget;
     setDeleteModalTarget(null); // Tutup modal
 
-    await deleteOfficialAction(nama);
-    setLocalData((prev) => prev.filter((p) => p.nama !== nama));
+    await deleteOfficialAction(String(id));
+    setLocalData((prev) => prev.filter((p) => p.id !== id));
 
-    if (editingItem?.nama === nama) {
+    if (editingItem?.id === id) {
       setEditingItem(null);
       setImagePreview(null);
     }
@@ -128,9 +129,9 @@ export default function OfficialsManager({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant/10">
-                  {localData.map((item, index) => (
+                  {localData.map((item) => (
                     <tr
-                      key={item.nama + index}
+                      key={item.id}
                       className="hover:bg-surface-container-lowest transition-colors group"
                     >
                       <td className="px-6 py-4">
@@ -170,7 +171,7 @@ export default function OfficialsManager({
                           </span>
                         </button>
                         <button
-                          onClick={() => setDeleteModalTarget(item.nama)}
+                          onClick={() => setDeleteModalTarget(item.id)}
                           className="p-2 text-stone-400 hover:text-error transition-colors cursor-pointer"
                         >
                           <span className="material-symbols-outlined text-[18px]">
@@ -214,12 +215,12 @@ export default function OfficialsManager({
 
           <form
             action={handleFormWrapperAction}
-            key={editingItem?.nama || "new"}
+            key={editingItem?.id || "new"}
             className="space-y-5"
           >
             {/* Hidden ID Field */}
             {editingItem && (
-              <input type="hidden" name="idAsli" value={editingItem.nama} />
+              <input type="hidden" name="idAsli" value={editingItem.id} />
             )}
 
             {/* Smart Photo Upload Pretend */}
@@ -345,7 +346,7 @@ export default function OfficialsManager({
       </div>
 
       {/* Modal Konfirmasi Hapus */}
-      {deleteModalTarget && (
+      {deleteModalTarget !== null && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 whitespace-normal">
           <div className="bg-surface-container-lowest w-full max-w-md rounded-[2rem] p-8 shadow-2xl animate-in fade-in zoom-in duration-200 flex flex-col items-center text-center mx-4">
             <div className="w-16 h-16 rounded-full bg-error/10 text-error flex items-center justify-center mb-5 ring-8 ring-error/5">
@@ -357,11 +358,8 @@ export default function OfficialsManager({
               Hapus Profil Ini?
             </h3>
             <p className="text-sm text-on-surface-variant mb-8 leading-relaxed w-full">
-              Profil aparatur atas nama{" "}
-              <span className="font-bold text-on-surface">
-                {deleteModalTarget}
-              </span>{" "}
-              akan dihapus secara permanen dari daftar organisasi desa Anda.
+              Profil aparatur ini akan dihapus secara permanen dari daftar
+              organisasi desa Anda.
             </p>
             <div className="flex w-full items-center justify-center gap-3 pt-2">
               <button

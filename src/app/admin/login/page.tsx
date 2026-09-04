@@ -43,7 +43,6 @@ export default function AdminLoginPage() {
                 type="email" 
                 name="email"
                 required
-                defaultValue="admin@desakita.id"
                 className="w-full pl-12 pr-4 py-4 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary transition-all font-body text-on-surface" 
                 placeholder="admin@desakita.id" 
               />
@@ -61,16 +60,17 @@ export default function AdminLoginPage() {
                 type="password" 
                 name="password"
                 required
-                defaultValue="admin123"
                 className="w-full pl-12 pr-4 py-4 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary transition-all font-body text-on-surface" 
                 placeholder="••••••••" 
               />
             </div>
           </div>
 
-          <div className="flex justify-center w-full py-2">
-            <Turnstile siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!} />
-          </div>
+          {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && (
+            <div className="flex justify-center w-full py-2">
+              <Turnstile siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY} />
+            </div>
+          )}
 
           <button 
             type="submit" 

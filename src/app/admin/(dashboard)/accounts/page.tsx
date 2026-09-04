@@ -1,4 +1,4 @@
-import { getAkunAdmin } from "@/lib/sheets";
+import { getAkunAdminSafe } from "@/lib/db";
 import AccountsManager from "./AccountsManager";
 
 export const metadata = {
@@ -7,7 +7,7 @@ export const metadata = {
 };
 
 export default async function AdminAccountsPage() {
-  const akunData = await getAkunAdmin();
+  const akunData = await getAkunAdminSafe();
 
   return (
     <>

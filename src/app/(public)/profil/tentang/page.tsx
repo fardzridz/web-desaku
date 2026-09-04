@@ -1,7 +1,7 @@
 import Link from "next/link";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import heroImg from "@/assets/images/hero.jpg";
-import { getPerangkat, getIdentitas } from "@/lib/sheets";
+import { getPerangkat, getIdentitas } from "@/lib/db";
 
 export const metadata = {
   title: "Profil Umum - Desa Wringinanom",

@@ -1,7 +1,7 @@
 import {
   getBerita,
   getPerangkat,
-} from "@/lib/sheets";
+} from "@/lib/db";
 import Link from "next/link";
 import heroImg from "@/assets/images/hero.jpg";
 import AnimatedCounter from "@/components/AnimatedCounter";

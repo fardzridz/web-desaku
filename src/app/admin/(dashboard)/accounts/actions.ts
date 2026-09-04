@@ -1,8 +1,9 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import { getGoogleSheets } from "@/lib/googleClient";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { getDb, uploadImageToR2 } from "@/lib/cf";
 import { requireAdmin } from "@/lib/adminAuth";
+import { CACHE_TAGS } from "@/lib/db";
 import bcrypt from "bcryptjs";
 
 export interface ActionState {
@@ -10,13 +11,11 @@ export interface ActionState {
   message: string;
 }
 
-const SHEET_ID = process.env.GOOGLE_SHEETS_ID;
-
 export async function saveAkunAction(prevState: ActionState, formData: FormData): Promise<ActionState> {
   await requireAdmin();
 
   const idAsli = formData.get("idAsli") as string; // email asli sebelum diedit
-  const email = formData.get("email") as string;
+  const email = (formData.get("email") as string)?.trim().toLowerCase();
   const password = formData.get("password") as string;
   const namaLengkap = formData.get("namaLengkap") as string;
   const role = formData.get("role") as string;
@@ -27,87 +26,62 @@ export async function saveAkunAction(prevState: ActionState, formData: FormData)
   }
 
   try {
-    const sheets = getGoogleSheets();
-    let finalFotoUrl = "";
+    const db = await getDb();
 
-    // 1. Upload Gambar
+    const existing = idAsli
+      ? await db.prepare(`SELECT email, foto_url FROM akun WHERE email = ?`).bind(idAsli).first<{ email: string; foto_url: string }>()
+      : null;
+
+    // Cek apakah email baru sudah dipakai akun lain
+    const emailConflict = await db
+      .prepare(`SELECT email FROM akun WHERE email = ? AND email != ? LIMIT 1`)
+      .bind(email, idAsli || "")
+      .first<{ email: string }>();
+
+    if (!existing && emailConflict) {
+      return { success: false, message: "Email ini sudah terdaftar sebagai admin." };
+    }
+    if (existing && emailConflict) {
+      return { success: false, message: "Email ini sudah terdaftar sebagai admin." };
+    }
+
+    // 1. Upload gambar (jika ada file baru)
+    let finalFotoUrl = existing?.foto_url || "";
     if (fotoFile && fotoFile.size > 0 && fotoFile.name !== "undefined") {
-      if (!process.env.IMGBB_API_KEY) {
-        throw new Error("Kunci IMGBB_API_KEY belum dipasang!");
-      }
-
-      const imgFormData = new FormData();
-      imgFormData.append("image", fotoFile);
-
-      const imgResponse = await fetch(`https://api.imgbb.com/1/upload?key=${process.env.IMGBB_API_KEY}`, {
-        method: "POST",
-        body: imgFormData,
-      });
-
-      const imgDataObj = await imgResponse.json();
-
-      if (imgDataObj.success) {
-        finalFotoUrl = imgDataObj.data.url;
-      } else {
-        throw new Error(`Gagal Upload: ${imgDataObj.error?.message}`);
-      }
+      finalFotoUrl = await uploadImageToR2(fotoFile, "akun");
     }
 
-    // 2. Sinkronisasi Data
-    const readResponse = await sheets.spreadsheets.values.get({
-      spreadsheetId: SHEET_ID,
-      range: "akun!A:E",
-    });
-
-    const rows = readResponse.data.values || [];
-    const rowIndex = idAsli ? rows.findIndex((row: string[]) => row[0] === idAsli) : -1;
-
-    // Gunakan password lama jika dikosongkan saat update
-    let finalPassword = password;
-    if (idAsli && rowIndex !== -1 && (!password || password.trim() === "")) {
-      finalPassword = rows[rowIndex][1] || "";
+    // 2. Password: gunakan hash lama jika dikosongkan saat update
+    let finalPasswordHash = "";
+    if (existing && (!password || password.trim() === "")) {
+      const row = await db.prepare(`SELECT password_hash FROM akun WHERE email = ?`).bind(idAsli).first<{ password_hash: string }>();
+      finalPasswordHash = row?.password_hash || "";
     } else if (password && password.trim() !== "") {
-      const salt = await bcrypt.genSalt(12);
-      finalPassword = await bcrypt.hash(password, salt);
-    }
-
-    if (idAsli && rowIndex !== -1 && finalFotoUrl === "") {
-      finalFotoUrl = rows[rowIndex][4] || "";
-    }
-
-    const rowData = [email, finalPassword, namaLengkap, role, finalFotoUrl];
-
-    if (idAsli && rowIndex !== -1) {
-      const exactRow = rowIndex + 1;
-      await sheets.spreadsheets.values.update({
-        spreadsheetId: SHEET_ID,
-        range: `akun!A${exactRow}:E${exactRow}`,
-        valueInputOption: "USER_ENTERED",
-        requestBody: { values: [rowData] },
-      });
+      finalPasswordHash = await bcrypt.hash(password, 12);
     } else {
-      // Cek apakah email sudah ada saat proses create
-      const existIndex = rows.findIndex((row: string[]) => row[0] === email);
-      if (existIndex !== -1) {
-        return { success: false, message: "Email ini sudah terdaftar sebagai admin." };
-      }
+      return { success: false, message: "Password wajib diisi untuk akun baru." };
+    }
 
-      await sheets.spreadsheets.values.append({
-        spreadsheetId: SHEET_ID,
-        range: "akun!A:E",
-        valueInputOption: "USER_ENTERED",
-        requestBody: { values: [rowData] },
-      });
+    if (existing) {
+      await db
+        .prepare(`UPDATE akun SET email = ?, password_hash = ?, nama_lengkap = ?, role = ?, foto_url = ? WHERE email = ?`)
+        .bind(email, finalPasswordHash, namaLengkap, role, finalFotoUrl, idAsli)
+        .run();
+    } else {
+      await db
+        .prepare(`INSERT INTO akun (email, password_hash, nama_lengkap, role, foto_url) VALUES (?, ?, ?, ?, ?)`)
+        .bind(email, finalPasswordHash, namaLengkap, role, finalFotoUrl)
+        .run();
     }
 
     revalidatePath("/admin/accounts");
 
-    return { 
-      success: true, 
-      message: idAsli ? "Data akun berhasil diperbarui!" : "Akun baru berhasil ditambahkan!" 
+    return {
+      success: true,
+      message: idAsli ? "Data akun berhasil diperbarui!" : "Akun baru berhasil ditambahkan!"
     };
   } catch (error: unknown) {
-    console.error("❌ GOOGLE APIs ERROR:", error);
+    console.error("❌ DB ERROR:", error);
     return { success: false, message: "Gagal menyimpan data akun." };
   }
 }
@@ -116,47 +90,20 @@ export async function deleteAkunAction(email: string) {
   await requireAdmin();
 
   try {
-    const sheets = getGoogleSheets();
-    
-    const readResponse = await sheets.spreadsheets.values.get({
-      spreadsheetId: SHEET_ID,
-      range: "akun!A:A", 
-    });
+    const db = await getDb();
 
-    const rows = readResponse.data.values || [];
-    const rowIndex = rows.findIndex((row: string[]) => row[0] === email);
+    // Proteksi: jangan sampai akun terakhir terhapus
+    const count = await db.prepare(`SELECT COUNT(*) AS c FROM akun`).first<{ c: number }>();
+    const current = await db.prepare(`SELECT COUNT(*) AS c FROM akun WHERE email = ?`).bind(email).first<{ c: number }>();
 
-    if (rowIndex === -1) {
+    if (!current?.c) {
       return { success: false, message: "Akun tidak ditemukan." };
     }
-
-    const spreadsheet = await sheets.spreadsheets.get({
-      spreadsheetId: SHEET_ID,
-    });
-    const sheet = spreadsheet.data.sheets?.find(s => s.properties?.title?.toLowerCase() === "akun");
-    const sheetId = sheet?.properties?.sheetId;
-
-    if (sheetId === undefined) {
-      return { success: false, message: "Tab akun tidak ditemukan di Spreadsheet." };
+    if ((count?.c ?? 0) <= 1) {
+      return { success: false, message: "Tidak bisa menghapus satu-satunya akun admin." };
     }
 
-    await sheets.spreadsheets.batchUpdate({
-      spreadsheetId: SHEET_ID,
-      requestBody: {
-        requests: [
-          {
-            deleteDimension: {
-              range: {
-                sheetId: sheetId,
-                dimension: "ROWS",
-                startIndex: rowIndex, 
-                endIndex: rowIndex + 1,
-              },
-            },
-          },
-        ],
-      },
-    });
+    await db.prepare(`DELETE FROM akun WHERE email = ?`).bind(email).run();
 
     revalidatePath("/admin/accounts");
     return { success: true, message: `Akun ${email} berhasil dihapus!` };

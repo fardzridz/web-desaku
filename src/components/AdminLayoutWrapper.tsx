@@ -2,7 +2,7 @@
 
 import AdminSidebar from "@/components/AdminSidebar";
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import type { IdentitasData, AkunItem } from "@/lib/sheets";
+import type { IdentitasData, SafeAkunItem } from "@/lib/db";
 import { logoutAction } from "@/app/admin/login/actions";
 
 const IDLE_TIMEOUT_MS = 15 * 60 * 1000;
@@ -14,7 +14,7 @@ export default function AdminLayoutWrapper({
 }: { 
   children: React.ReactNode;
   identitas?: IdentitasData;
-  adminAccount?: AkunItem | null;
+  adminAccount?: SafeAkunItem | null;
 }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);

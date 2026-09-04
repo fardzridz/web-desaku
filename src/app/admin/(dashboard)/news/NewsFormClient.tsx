@@ -3,7 +3,7 @@
 import React, { useState, useActionState } from "react";
 import Link from "next/link";
 import RichTextEditor from "@/components/RichTextEditor";
-import { BeritaItem } from "@/lib/sheets";
+import { BeritaItem } from "@/lib/db";
 import { saveNewsAction } from "./actions";
 
 interface NewsFormClientProps {

@@ -1,5 +1,5 @@
 import Navbar from "@/components/Navbar";
-import { getIdentitas } from "@/lib/sheets";
+import { getIdentitas } from "@/lib/db";
 import Link from "next/link";
 import React from "react";
 
