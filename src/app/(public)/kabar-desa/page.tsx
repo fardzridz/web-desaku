@@ -68,7 +68,7 @@ export default async function KabarDesaPage({
               <div className="relative h-[250px] md:h-[400px] overflow-hidden rounded-[1.5rem] md:rounded-2xl">
                 <img
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  alt={featuredBerita.judul}
+                  alt={`${featuredBerita.judul} — Kabar Desa Wringinanom, Tongas, Probolinggo`}
                   src={featuredBerita.fotoUrl}
                 />
                 <div className="absolute top-4 left-4 md:top-6 md:left-6 flex gap-2">
@@ -121,7 +121,7 @@ export default async function KabarDesaPage({
                   <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-surface-container-high mb-6">
                     <img
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      alt={item.judul}
+                      alt={`${item.judul} — Kabar Desa Wringinanom, Tongas, Probolinggo`}
                       src={item.fotoUrl}
                     />
                   </div>
@@ -231,7 +231,7 @@ export default async function KabarDesaPage({
                     <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
                       <img
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                        alt={item.judul}
+                        alt={`${item.judul} — Kabar Desa Wringinanom, Tongas, Probolinggo`}
                         src={item.fotoUrl}
                       />
                     </div>

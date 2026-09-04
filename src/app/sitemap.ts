@@ -1,58 +1,52 @@
 import { MetadataRoute } from 'next';
 import { getBerita, getIdentitas } from '@/lib/db';
+import { parseTanggalIndo } from '@/lib/entity';
+
+const SITE_BUILD_DATE = new Date();
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const identitas = await getIdentitas();
-  // Gunakan URL dari sheet jika ada, kalau tidak gunakan production base URL
   const baseUrl = identitas?.websiteUrl || 'https://portal-wringinanom.web.id';
 
-  // Ambil semua rute statis
-  const staticRoutes = [
-    '',
-    '/profil',
-    '/profil/geografis',
-    '/profil/demografi',
-    '/profil/potensi',
-    '/profil/sejarah',
-    '/profil/visi-misi',
-    '/profil/pemerintahan',
-    '/layanan',
-    '/kabar-desa',
-    '/data-warga',
-    '/kontak',
-    '/transparansi/apbdes',
-  ].map((route) => ({
+  // Rute statis. lastmod = tanggal build (stabil selama satu build,
+  // bukan `new Date()` per-entri acak), prioritas berlapis untuk pillar.
+  const routePriority: Record<string, number> = {
+    '': 1,
+    '/profil': 0.9,
+    '/profil/sejarah': 0.7,
+    '/profil/geografis': 0.8,
+    '/profil/demografi': 0.7,
+    '/profil/potensi': 0.8,
+    '/profil/visi-misi': 0.6,
+    '/profil/pemerintahan': 0.8,
+    '/layanan': 0.9,
+    '/kabar-desa': 0.9,
+    '/data-warga': 0.6,
+    '/kontak': 0.7,
+    '/transparansi/apbdes': 0.8,
+  };
+
+  const staticRoutes = Object.keys(routePriority).map((route) => ({
     url: `${baseUrl}${route}`,
-    lastModified: new Date(),
-    changeFrequency: 'weekly' as const,
-    priority: route === '' ? 1 : 0.8,
+    lastModified: SITE_BUILD_DATE,
+    changeFrequency: (route === '/kabar-desa' ? 'daily' : 'monthly') as
+      | 'daily'
+      | 'monthly',
+    priority: routePriority[route],
   }));
 
-  // Ambil rute dinamis (Berita)
+  // Rute dinamis (Berita) — lastmod dari tanggal terbit sebenarnya.
   let dynamicRoutes: MetadataRoute.Sitemap = [];
   try {
     const berita = await getBerita();
-    dynamicRoutes = berita.map((item) => {
-      // Usahakan parsing tanggal "10 Oktober 2023" menjadi Date. Kalau gagal, gunakan now()
-      let lastMod = new Date();
-      try {
-        const parsedDate = new Date(item.tanggal);
-        if (!isNaN(parsedDate.getTime())) {
-          lastMod = parsedDate;
-        }
-      } catch {
-        // Abaikan dan gunakan default now()
-      }
-
-      return {
-        url: `${baseUrl}/kabar-desa/${item.slug}`,
-        lastModified: lastMod,
-        changeFrequency: 'monthly' as const,
-        priority: 0.7,
-      };
-    });
+    dynamicRoutes = berita.map((item) => ({
+      url: `${baseUrl}/kabar-desa/${item.slug}`,
+      lastModified: parseTanggalIndo(item.tanggal) || SITE_BUILD_DATE,
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    }));
   } catch (error) {
-    console.error("Gagal men-generate sitemap dinamis berita:", error);
+    console.error('Gagal men-generate sitemap dinamis berita:', error);
   }
 
   return [...staticRoutes, ...dynamicRoutes];

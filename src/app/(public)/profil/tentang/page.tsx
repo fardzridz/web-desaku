@@ -2,9 +2,13 @@ import Link from "next/link";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import heroImg from "@/assets/images/hero.jpg";
 import { getPerangkat, getIdentitas } from "@/lib/db";
+import { DISAMBIGUATION_TEXT, REGION_CODES, NAP, GEO_VILLAGE, EXTERNAL_REFS } from "@/lib/entity";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: "Profil Umum - Desa Wringinanom",
+export const metadata: Metadata = {
+  title: "Profil Umum",
+  description: `Profil umum Desa Wringinanom, Kecamatan Tongas, Kabupaten Probolinggo, Jawa Timur. Kode wilayah ${REGION_CODES.kemendagri}, kode BPS ${REGION_CODES.bps}, kode pos ${REGION_CODES.postalCode}. Luas 840 Ha, 8 dusun, lebih dari 6.900 jiwa.`,
+  alternates: { canonical: "/profil/tentang" },
 };
 
 export default async function TentangDesaPage() {
@@ -31,10 +35,73 @@ export default async function TentangDesaPage() {
               Profil {namaDesa}
             </h1>
             <p className="text-lg md:text-xl text-white/80 font-medium leading-relaxed">
-              Sebuah harmoni antara warisan leluhur dan inovasi digital untuk
-              kemajuan bersama.
+              Desa Wringinanom, Kecamatan Tongas, Kabupaten Probolinggo, Jawa
+              Timur — harmoni antara warisan leluhur dan inovasi digital.
             </p>
           </div>
+        </div>
+      </section>
+
+      {/* Identitas Wilayah & Disambiguasi Entitas — data faktual terstruktur untuk SEO & AI */}
+      <section className="max-w-7xl mx-auto px-4 md:px-8 mt-8 md:mt-16 mb-8 md:mb-16">
+        <div className="bg-surface-container-lowest rounded-[2rem] border border-outline-variant/20 p-6 md:p-10">
+          <h2 className="text-2xl md:text-3xl font-bold text-on-surface mb-6 font-headline">
+            Identitas Wilayah Desa Wringinanom
+          </h2>
+          <p className="text-on-surface-variant leading-relaxed mb-8">
+            {DISAMBIGUATION_TEXT}
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { label: "Nama Resmi", value: "Desa Wringinanom" },
+              { label: "Kecamatan", value: "Tongas" },
+              { label: "Kabupaten", value: "Probolinggo" },
+              { label: "Provinsi", value: "Jawa Timur" },
+              { label: "Kode Kemendagri", value: REGION_CODES.kemendagri },
+              { label: "Kode BPS", value: REGION_CODES.bps },
+              { label: "Kode Pos", value: REGION_CODES.postalCode },
+              {
+                label: "Koordinat Centroid",
+                value: `${GEO_VILLAGE.latitude.toFixed(4)}° LS, ${GEO_VILLAGE.longitude.toFixed(4)}° BT`,
+              },
+              { label: "Alamat Kantor Desa", value: NAP.full },
+              { label: "Kepala Desa", value: "Saiful Rizal Habibi" },
+              { label: "Luas Wilayah", value: "±840 Hektare" },
+              { label: "Jumlah Dusun", value: "8 Dusun" },
+            ].map((item) => (
+              <div
+                key={item.label}
+                className="bg-surface-container rounded-xl p-4 border border-outline-variant/20"
+              >
+                <p className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-outline mb-1 font-label">
+                  {item.label}
+                </p>
+                <p className="text-sm md:text-base font-bold text-on-surface font-headline">
+                  {item.value}
+                </p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-6 text-xs text-outline">
+            Referensi entitas:{" "}
+            <a
+              href={EXTERNAL_REFS.wikidata}
+              className="text-primary underline"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Wikidata Q14754551
+            </a>
+            {" · "}
+            <a
+              href={EXTERNAL_REFS.wikipedia}
+              className="text-primary underline"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Wikipedia
+            </a>
+          </p>
         </div>
       </section>
 
@@ -45,7 +112,7 @@ export default async function TentangDesaPage() {
             <div className="aspect-[4/5] rounded-[2rem] overflow-hidden shadow-2xl rotate-0 md:rotate-2">
               <img
                 className="w-full h-full object-cover"
-                alt="Traditional Heritage"
+                alt="Warisan budaya dan sejarah Desa Wringinanom, Kecamatan Tongas, Kabupaten Probolinggo"
                 src="https://i.ibb.co.com/wFKWKFsb/1000364727.jpg"
               />
             </div>

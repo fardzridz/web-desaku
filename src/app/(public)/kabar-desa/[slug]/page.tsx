@@ -1,11 +1,16 @@
-import { getBerita } from "@/lib/db";
+import { getBerita, getIdentitas } from "@/lib/db";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import sanitizeHtml from "sanitize-html";
+import JsonLd from "@/components/JsonLd";
+import { buildBreadcrumb, buildNewsArticle, SITE_URL } from "@/lib/entity";
+import type { Metadata } from "next";
 
-// Whitelist tag HTML yang diizinkan dari editor konten berita
+// Whitelist tag HTML yang diizinkan dari editor konten berita.
+// h1 dari konten dinormalisasi ke h2 (hanya 1 H1 per halaman = judul artikel).
 const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
-  allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img", "figure", "figcaption", "h1", "h2"]),
+  allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img", "figure", "figcaption", "h2"]),
+  transformTags: { h1: "h2" },
   allowedAttributes: {
     ...sanitizeHtml.defaults.allowedAttributes,
     img: ["src", "alt", "title", "width", "height", "loading"],
@@ -16,22 +21,50 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
 };
 
 // Generate Metadata for SEO
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
   const resolvedParams = await params;
   const beritaData = await getBerita();
   const berita = beritaData.find((item) => item.slug === resolvedParams.slug);
 
   if (!berita) return { title: "Berita Tidak Ditemukan" };
 
+  const judulSeo = `${berita.judul} | Desa Wringinanom, Tongas, Probolinggo`;
+  const desc =
+    berita.ringkasan ||
+    `Berita resmi dari Pemerintah Desa Wringinanom, Kecamatan Tongas, Kabupaten Probolinggo, Jawa Timur.`;
+
   return {
-    title: berita.judul,
-    description: berita.ringkasan,
+    title: judulSeo,
+    description: desc,
+    alternates: { canonical: `/kabar-desa/${berita.slug}` },
+    openGraph: {
+      type: "article",
+      title: judulSeo,
+      description: desc,
+      url: `${SITE_URL}/kabar-desa/${berita.slug}`,
+      siteName: "Desa Wringinanom",
+      locale: "id_ID",
+      publishedTime: undefined,
+      images: berita.fotoUrl
+        ? [{ url: berita.fotoUrl, alt: `Foto berita: ${berita.judul} — Desa Wringinanom, Tongas, Probolinggo` }]
+        : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: judulSeo,
+      description: desc,
+      images: berita.fotoUrl ? [berita.fotoUrl] : undefined,
+    },
   };
 }
 
 export default async function DetilBeritaPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = await params;
-  const beritaData = await getBerita();
+  const [beritaData, identitasData] = await Promise.all([getBerita(), getIdentitas()]);
   const berita = beritaData.find((item) => item.slug === resolvedParams.slug);
 
   if (!berita) {
@@ -41,8 +74,25 @@ export default async function DetilBeritaPage({ params }: { params: Promise<{ sl
   // Rekomendasi: ambil maksimal 3 berita lain yang bukan berita saat ini
   const rekomendasi = beritaData.filter(item => item.slug !== resolvedParams.slug).slice(0, 3);
 
+  const articleJsonLd = buildNewsArticle({
+    url: `${SITE_URL}/kabar-desa/${berita.slug}`,
+    judul: berita.judul,
+    ringkasan: berita.ringkasan,
+    fotoUrl: berita.fotoUrl && !berita.fotoUrl.includes("placehold.co") ? berita.fotoUrl : undefined,
+    penulis: berita.penulis,
+    tanggal: berita.tanggal,
+  });
+  const breadcrumbJsonLd = buildBreadcrumb([
+    { name: "Beranda", url: "/" },
+    { name: "Kabar Desa", url: "/kabar-desa" },
+    { name: berita.judul },
+  ]);
+  const safeKonten = sanitizeHtml(berita.konten, SANITIZE_OPTIONS);
+
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-8 mt-6 md:mt-8 mb-20 md:mb-32 flex flex-col lg:flex-row gap-10 lg:gap-16">
+      <JsonLd data={articleJsonLd} />
+      <JsonLd data={breadcrumbJsonLd} />
       {/* Main Article Content */}
       <article className="lg:w-2/3">
         {/* Back Link */}
@@ -77,15 +127,17 @@ export default async function DetilBeritaPage({ params }: { params: Promise<{ sl
         <div className="relative w-full aspect-[4/3] md:aspect-[16/9] rounded-2xl md:rounded-[2rem] overflow-hidden shadow-sm mb-10 md:mb-16">
           <img
             src={berita.fotoUrl}
-            alt={berita.judul}
+            alt={`Foto berita: ${berita.judul} — Desa Wringinanom, Kecamatan Tongas, Kabupaten Probolinggo`}
             className="w-full h-full object-cover"
+            loading="eager"
+            fetchPriority="high"
           />
         </div>
 
         {/* Content Body */}
-        <div 
+        <div
           className="prose prose-base md:prose-xl prose-emerald max-w-none text-on-surface-variant leading-relaxed font-body prose-headings:font-headline prose-headings:text-on-surface prose-headings:font-bold prose-a:text-primary marker:text-primary [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:my-2 [&_b]:font-bold [&_strong]:font-bold [&_i]:italic"
-          dangerouslySetInnerHTML={{ __html: sanitizeHtml(berita.konten, SANITIZE_OPTIONS) }}
+          dangerouslySetInnerHTML={{ __html: safeKonten }}
         />
       </article>
 

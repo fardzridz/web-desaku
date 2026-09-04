@@ -1,10 +1,39 @@
 import { getPerangkat, getIdentitas } from "@/lib/db";
 import heroImg from "@/assets/images/hero.jpg";
 import ProfilAccordion from "./ProfilAccordion";
+import JsonLd from "@/components/JsonLd";
+import { buildFaqPage, REGION_CODES, GEO_VILLAGE } from "@/lib/entity";
+import type { Metadata } from "next";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Profil Desa",
+  description: `Profil lengkap Desa Wringinanom, Kecamatan Tongas, Kabupaten Probolinggo, Jawa Timur: sejarah, geografis, demografi, potensi unggulan, visi misi, dan pemerintahan desa. Kode pos ${REGION_CODES.postalCode}, kode wilayah ${REGION_CODES.kemendagri}.`,
+  alternates: { canonical: "/profil" },
 };
+
+/** FAQ visible + JSON-LD — data fakta desa untuk SEO & GEO/AEO. */
+const FAQ_DESA = [
+  {
+    q: "Di kecamatan dan kabupaten mana Desa Wringinanom berada?",
+    a: `Desa Wringinanom berada di Kecamatan Tongas, Kabupaten Probolinggo, Provinsi Jawa Timur, Indonesia. Kode wilayah Kemendagri ${REGION_CODES.kemendagri}, kode BPS ${REGION_CODES.bps}, kode pos ${REGION_CODES.postalCode}.`,
+  },
+  {
+    q: "Apakah Desa Wringinanom sama dengan Kecamatan Wringinanom di Gresik?",
+    a: "Tidak. Desa Wringinanom yang dibahas di portal ini adalah desa di Kecamatan Tongas, Kabupaten Probolinggo, Jawa Timur — berbeda dengan Kecamatan Wringinanom yang berada di Kabupaten Gresik, maupun desa bernama Wringinanom di Wonosobo, Malang, Situbondo, dan Ponorogo.",
+  },
+  {
+    q: "Siapa Kepala Desa Wringinanom saat ini?",
+    a: "Kepala Desa Wringinanom (Tongas, Probolinggo) saat ini adalah Saiful Rizal Habibi, dibantu Sekretaris Desa Paiman beserta jajaran perangkat desa lainnya.",
+  },
+  {
+    q: "Apa koordinat geografis Desa Wringinanom?",
+    a: `Centroid Desa Wringinanom terletak pada koordinat lintang ${GEO_VILLAGE.latitude.toFixed(4)}° LS dan bujur ${GEO_VILLAGE.longitude.toFixed(4)}° BT, dengan kantor desa di Balai Desa Wringinanom, Kecamatan Tongas, Kabupaten Probolinggo.`,
+  },
+  {
+    q: "Bagaimana cara mengurus layanan administrasi di Desa Wringinanom?",
+    a: "Layanan administrasi kependudukan seperti Kartu Keluarga, Surat Keterangan Domisili, dan Akta Kelahiran dapat diajukan melalui halaman Layanan pada portal resmi ini, atau menghubungi Balai Desa Wringinanom, Kecamatan Tongas, Kabupaten Probolinggo.",
+  },
+];
 
 export default async function ProfilPage() {
   const [perangkatData, identitasData] = await Promise.all([
@@ -55,7 +84,8 @@ export default async function ProfilPage() {
               Profil {namaDesa}
             </h1>
             <p className="text-lg md:text-xl text-white/80 font-medium leading-relaxed">
-              Sebuah harmoni antara warisan leluhur dan inovasi digital untuk
+              Desa di Kecamatan Tongas, Kabupaten Probolinggo, Jawa Timur —
+              sebuah harmoni antara warisan leluhur dan inovasi digital untuk
               kemajuan bersama.
             </p>
           </div>
@@ -227,7 +257,7 @@ export default async function ProfilPage() {
                 <div className="mx-auto w-full max-w-[210px] sm:max-w-[220px] aspect-[3/4] rounded-xl overflow-hidden mb-5 bg-surface-container">
                   <img
                     className="w-full h-full object-cover object-top"
-                    alt={kades.jabatan}
+                    alt={`${kades.nama} — ${kades.jabatan} Desa Wringinanom, Tongas, Probolinggo`}
                     src={kades.fotoUrl || "https://placeholder.co/400"}
                   />
                 </div>
@@ -248,7 +278,7 @@ export default async function ProfilPage() {
                   <div className="mx-auto w-full max-w-[150px] sm:max-w-[170px] md:max-w-[190px] aspect-[3/4] rounded-xl overflow-hidden flex-shrink-0 mb-3 md:mb-4 bg-surface-container">
                     <img
                       className="w-full h-full object-cover object-top"
-                      alt={sekdes.jabatan}
+                      alt={`${sekdes.nama} — ${sekdes.jabatan} Desa Wringinanom, Tongas, Probolinggo`}
                       src={
                         sekdes.fotoUrl ||
                         "https://placehold.co/400x533/064e3b/ffffff?text=Foto"
@@ -270,7 +300,7 @@ export default async function ProfilPage() {
                   <div className="mx-auto w-full max-w-[150px] sm:max-w-[170px] md:max-w-[190px] aspect-[3/4] rounded-xl overflow-hidden flex-shrink-0 mb-3 md:mb-4 bg-surface-container">
                     <img
                       className="w-full h-full object-cover object-top"
-                      alt={bendahara.jabatan}
+                      alt={`${bendahara.nama} — ${bendahara.jabatan} Desa Wringinanom, Tongas, Probolinggo`}
                       src={
                         bendahara.fotoUrl ||
                         "https://placehold.co/400x533/064e3b/ffffff?text=Foto"
@@ -299,26 +329,57 @@ export default async function ProfilPage() {
                 <div className="mx-auto w-full max-w-[145px] sm:max-w-[165px] md:max-w-[180px] aspect-[3/4] rounded-xl overflow-hidden flex-shrink-0 mb-3 md:mb-4 bg-surface-container">
                   <img
                     className="w-full h-full object-cover object-top"
-                    alt={kaur.jabatan}
+                    alt={`${kaur.nama} — ${kaur.jabatan} Desa Wringinanom, Tongas, Probolinggo`}
                     src={
                       kaur.fotoUrl ||
                       "https://placehold.co/400x533/064e3b/ffffff?text=Foto"
                     }
                   />
                 </div>
-                <div className="mb-1 md:mb-2 flex-grow flex flex-col justify-end">
-                  <h4 className="text-sm md:text-lg font-bold text-on-surface font-headline leading-tight">
-                    {kaur.nama}
-                  </h4>
-                  <p className="text-emerald-700 text-[9px] md:text-xs font-bold uppercase mt-1">
-                    {kaur.jabatan}
-                  </p>
+                  <div className="mb-1 md:mb-2 flex-grow flex flex-col justify-end">
+                    <h4 className="text-sm md:text-lg font-bold text-on-surface font-headline leading-tight">
+                      {kaur.nama}
+                    </h4>
+                    <p className="text-emerald-700 text-[9px] md:text-xs font-bold uppercase mt-1">
+                      {kaur.jabatan}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
+      </section>
+
+      {/* FAQ / Fakta Cepat — konten visible yang dapat diekstrak AI & mesin pencari */}
+      <section className="max-w-7xl mx-auto px-4 md:px-8 pb-20 md:pb-32">
+        <div className="text-center mb-12 md:mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold text-on-surface mb-4 font-headline">
+            Pertanyaan Umum tentang Desa Wringinanom
+          </h2>
+          <div className="w-20 md:w-24 h-1 bg-tertiary mx-auto rounded-full"></div>
+          <p className="mt-4 md:mt-6 text-on-surface-variant max-w-2xl mx-auto text-sm md:text-base">
+            Fakta resmi tentang lokasi, kode wilayah, dan pemerintahan Desa
+            Wringinanom, Kecamatan Tongas, Kabupaten Probolinggo, Jawa Timur.
+          </p>
+        </div>
+        <div className="max-w-3xl mx-auto space-y-6">
+          {FAQ_DESA.map((faq, idx) => (
+            <div
+              key={idx}
+              className="bg-surface-container-lowest rounded-2xl border border-outline-variant/20 p-6 md:p-8"
+            >
+              <h3 className="text-lg md:text-xl font-bold text-on-surface font-headline mb-3">
+                {faq.q}
+              </h3>
+              <p className="text-on-surface-variant leading-relaxed text-sm md:text-base">
+                {faq.a}
+              </p>
+            </div>
+          ))}
         </div>
       </section>
+
+      <JsonLd data={buildFaqPage(FAQ_DESA)} />
     </>
   );
 }

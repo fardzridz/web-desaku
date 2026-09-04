@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter, Manrope } from "next/font/google";
 import "./globals.css";
 import { getIdentitas } from "@/lib/db";
+import { buildGlobalGraph, REGION_CODES } from "@/lib/entity";
+import JsonLd from "@/components/JsonLd";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope" });
@@ -9,17 +11,29 @@ const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope" });
 export async function generateMetadata(): Promise<Metadata> {
   const identitas = await getIdentitas();
   const namaDesa = identitas?.namaDesa || "Desa Wringinanom";
-  const desc = identitas?.sambutanKades ? identitas.sambutanKades.slice(0, 155) + "..." : "Portal resmi pemerintah desa dengan pelayanan modern dan informatif.";
-  
+  const desc = `${namaDesa} adalah desa di Kecamatan Tongas, Kabupaten Probolinggo, Jawa Timur (kode pos ${REGION_CODES.postalCode}). Portal resmi Pemerintah Desa: profil, layanan surat-menyurat, kabar desa, dan transparansi APBDes.`;
+
   return {
     metadataBase: new URL(identitas?.websiteUrl || "https://portal-wringinanom.web.id"),
     title: {
-      template: `%s | ${namaDesa}`,
-      default: `${namaDesa} - Portal Resmi Pemerintahan Desa`,
+      template: `%s | ${namaDesa}, Tongas, Probolinggo`,
+      default: `${namaDesa} — Kecamatan Tongas, Kabupaten Probolinggo | Portal Resmi`,
     },
     description: desc,
     authors: [{ name: `Pemerintah ${namaDesa}` }],
-    keywords: ["desa", namaDesa, "pelayanan desa", "wringinanom", "probolinggo", "website desa", "pemerintahan desa", "desa digital"],
+    keywords: [
+      "Desa Wringinanom",
+      "Wringinanom Tongas",
+      "Wringinanom Probolinggo",
+      "Pemerintah Desa Wringinanom",
+      "Kecamatan Tongas",
+      "Kabupaten Probolinggo",
+      "website desa Wringinanom",
+      "layanan desa Probolinggo",
+    ],
+    alternates: {
+      canonical: "/",
+    },
     robots: {
       index: true,
       follow: true,
@@ -32,7 +46,7 @@ export async function generateMetadata(): Promise<Metadata> {
       },
     },
     openGraph: {
-      title: `${namaDesa} - Portal Resmi Pemerintahan Desa`,
+      title: `${namaDesa} — Kecamatan Tongas, Kabupaten Probolinggo | Portal Resmi`,
       description: desc,
       url: identitas?.websiteUrl || "https://portal-wringinanom.web.id",
       siteName: namaDesa,
@@ -41,11 +55,17 @@ export async function generateMetadata(): Promise<Metadata> {
           url: identitas?.thumbnailUrl || identitas?.logoDesaUrl || "https://placehold.co/1200x630/064e3b/ffffff?text=Portal+Desa",
           width: 1200,
           height: 630,
-          alt: `Thumbnail ${namaDesa}`,
+          alt: `Portal Resmi ${namaDesa}, Kecamatan Tongas, Kabupaten Probolinggo, Jawa Timur`,
         },
       ],
       locale: "id_ID",
       type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${namaDesa} — Tongas, Probolinggo | Portal Resmi`,
+      description: desc,
+      images: [identitas?.thumbnailUrl || identitas?.logoDesaUrl || "https://placehold.co/1200x630/064e3b/ffffff?text=Portal+Desa"],
     },
     icons: {
       icon: identitas?.logoDesaUrl || "/favicon.ico",
@@ -64,6 +84,7 @@ export default function RootLayout({
     <html lang="id">
       <head>
         <meta name="referrer" content="no-referrer" />
+        <JsonLd data={buildGlobalGraph()} />
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
         <style dangerouslySetInnerHTML={{__html: `
           .material-symbols-outlined {

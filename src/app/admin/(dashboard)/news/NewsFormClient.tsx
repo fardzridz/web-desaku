@@ -4,6 +4,7 @@ import React, { useState, useActionState } from "react";
 import Link from "next/link";
 import RichTextEditor from "@/components/RichTextEditor";
 import { BeritaItem } from "@/lib/db";
+import { webpifyInput } from "@/lib/webp";
 import { saveNewsAction } from "./actions";
 
 interface NewsFormClientProps {
@@ -20,11 +21,12 @@ export default function NewsFormClient({ artikel }: NewsFormClientProps) {
     saveStateInitial,
   );
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const url = URL.createObjectURL(file);
-      setImagePreview(url);
+      const converted = await webpifyInput(e.currentTarget);
+      const finalUrl = URL.createObjectURL(converted || file);
+      setImagePreview(finalUrl);
     }
   };
 

@@ -33,7 +33,7 @@ export default async function Home() {
         <div className="absolute inset-0 z-0">
           <img
             className="w-full h-full object-cover"
-            alt="Desa Wringinanom"
+            alt="Suasana Desa Wringinanom, Kecamatan Tongas, Kabupaten Probolinggo, Jawa Timur"
             src={heroImg.src}
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/30"></div>
@@ -42,18 +42,19 @@ export default async function Home() {
         <div className="relative z-10 w-full max-w-7xl mx-auto px-4 md:px-8 mt-16 md:mt-0 flex-grow md:flex-grow-0 flex flex-col justify-center">
           <div className="max-w-3xl relative z-20 pt-8 pb-8 md:py-0">
             <span className="inline-block px-3 md:px-4 py-1.5 rounded-full bg-primary/20 backdrop-blur-md text-primary-fixed text-xs font-bold tracking-widest uppercase mb-4 md:mb-6 border border-primary/30">
-              Desa Wringinanom
+              Desa Wringinanom — Tongas, Probolinggo
             </span>
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight tracking-tight mb-6 font-headline drop-shadow-lg md:whitespace-nowrap">
-              Membangun{" "}
-              <span className="text-primary-fixed italic">Masa Depan</span>{" "}
+              Desa Wringinanom,{" "}
+              <span className="text-primary-fixed italic">Tongas</span>{" "}
               <br />
-              Dari Akar Tradisi.
+              Probolinggo.
             </h1>
             <p className="text-base md:text-xl text-white/90 leading-relaxed mb-10 max-w-2xl font-light drop-shadow-md">
               &quot;Selamat datang di Portal Resmi Pemerintahan Desa
-              Wringinanom. Kami berkomitmen melayani dengan transparan, cepat,
-              dan inovatif demi Wringinanom yang maju dan mandiri.&quot;
+              Wringinanom, Kecamatan Tongas, Kabupaten Probolinggo, Jawa Timur.
+              Kami berkomitmen melayani dengan transparan, cepat, dan inovatif
+              demi Wringinanom yang maju dan mandiri.&quot;
               <br />
               <span className="block mt-3 text-sm md:text-base font-bold text-white">
                 — {kades.nama}, Kepala Desa
@@ -92,7 +93,7 @@ export default async function Home() {
         <div className="relative md:absolute md:bottom-0 md:bg-transparent md:right-0 xl:right-16 z-0 md:z-10 w-full flex justify-center md:justify-end mt-auto pointer-events-none self-center md:self-end overflow-hidden md:overflow-visible">
           <img
             src="https://i.ibb.co.com/4rc0HWs/177597dfdfdfdfdfdf5443209.png"
-            alt="Kepala Desa dan Ibu Kades Wringinanom"
+            alt="Kepala Desa dan Ibu Kades Desa Wringinanom, Tongas, Probolinggo"
             className="w-full md:w-auto h-[380px] sm:h-[450px] md:h-[80vh] md:max-h-[850px] object-cover md:object-contain object-top md:object-bottom drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] md:mr-16 scale-[1.15] md:scale-100 origin-top md:origin-bottom mt-4 md:mt-0"
           />
         </div>
@@ -217,7 +218,7 @@ export default async function Home() {
               <div className="h-64 overflow-hidden relative">
                 <img
                   src="https://i.ibb.co.com/sJgXbzSR/download-12.jpg"
-                  alt="Pertanian Unggulan"
+                  alt="Pertanian unggulan Desa Wringinanom, Tongas, Probolinggo"
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
                 <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-3 rounded-xl shadow-lg">
@@ -245,7 +246,7 @@ export default async function Home() {
               <div className="h-64 overflow-hidden relative">
                 <img
                   src="https://i.ibb.co.com/cfHg02F/Usaha-Ternak-Sapi-Untuk-Pemula-dan-Menguntungkan-100.jpg"
-                  alt="Peternakan Berkembang"
+                  alt="Peternakan berkembang Desa Wringinanom, Tongas, Probolinggo"
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
                 <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-3 rounded-xl shadow-lg">
@@ -273,7 +274,7 @@ export default async function Home() {
               <div className="h-64 overflow-hidden relative">
                 <img
                   src="https://i.ibb.co.com/5WyS0rJC/Food-and-Agriculture-Benchmark-WBA.jpg"
-                  alt="Geliat UMKM"
+                  alt="Geliat UMKM Desa Wringinanom, Tongas, Probolinggo"
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
                 <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-3 rounded-xl shadow-lg">
@@ -432,7 +433,7 @@ export default async function Home() {
                       <div className="aspect-[4/3] overflow-hidden relative">
                         <img
                           src={item.fotoUrl}
-                          alt={item.judul}
+                          alt={`${item.judul} — Berita Desa Wringinanom, Tongas, Probolinggo`}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                         />
                         {/* <div className="absolute top-4 left-4 bg-primary text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-md">
@@ -493,7 +494,7 @@ export default async function Home() {
                       <div className="aspect-[4/3] overflow-hidden relative">
                         <img
                           src={item.img}
-                          alt={item.judul}
+                          alt={`${item.judul} — Berita Desa Wringinanom, Tongas, Probolinggo`}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                         />
                         <div className="absolute top-4 left-4 bg-primary text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-md">
@@ -549,7 +550,7 @@ export default async function Home() {
             ].map((src, idx) => (
               <div key={idx} className={`relative overflow-hidden group rounded-2xl bg-stone-800 ${idx === 6 ? 'col-span-2 lg:col-span-2' : ''}`}>
                 <div className="aspect-square w-full">
-                  <img src={src} alt={`Galeri Desa ${idx + 1}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-80 group-hover:opacity-100" />
+                  <img src={src} alt={`Galeri Desa Wringinanom, Kecamatan Tongas, Kabupaten Probolinggo ${idx + 1}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-80 group-hover:opacity-100" />
                 </div>
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer">
                   <div className="w-12 h-12 rounded-full border-2 border-white/50 flex items-center justify-center text-white backdrop-blur-md">

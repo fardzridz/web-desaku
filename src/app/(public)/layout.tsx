@@ -49,22 +49,28 @@ export default async function PublicLayout({
                 digital yang transparan, cepat, dan akuntabel.
               </p>
               <div className="flex gap-4">
-                <Link
-                  href="#"
+                <a
+                  href={identitasData.instagramUrl || "https://www.instagram.com/pemdeswringinanom85/"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Instagram Pemerintah Desa Wringinanom"
                   className="w-10 h-10 rounded-full bg-stone-300 flex items-center justify-center hover:bg-primary hover:text-white transition-colors group"
                 >
                   <span className="material-symbols-outlined text-sm text-stone-700 group-hover:text-white group-hover:scale-110 transition-all">
-                    share
+                    photo_camera
                   </span>
-                </Link>
-                <Link
-                  href="#"
+                </a>
+                <a
+                  href={`https://wa.me/${noWa}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="WhatsApp Pemerintah Desa Wringinanom"
                   className="w-10 h-10 rounded-full bg-stone-300 flex items-center justify-center hover:bg-primary hover:text-white transition-colors group"
                 >
                   <span className="material-symbols-outlined text-sm text-stone-700 group-hover:text-white group-hover:scale-110 transition-all">
-                    public
+                    chat
                   </span>
-                </Link>
+                </a>
               </div>
             </div>
 
@@ -173,11 +179,11 @@ export default async function PublicLayout({
               © 2026 Pemerintah Desa Wringinanom. Dibuat untuk melayani warga.
             </p>
             <div className="flex gap-6">
-              <Link href="#" className="hover:text-primary transition-colors">
-                Privacy Policy
+              <Link href="/kontak" className="hover:text-primary transition-colors">
+                Kontak & Kebijakan
               </Link>
-              <Link href="#" className="hover:text-primary transition-colors">
-                Terms of Service
+              <Link href="/transparansi/apbdes" className="hover:text-primary transition-colors">
+                Transparansi Anggaran
               </Link>
             </div>
           </div>

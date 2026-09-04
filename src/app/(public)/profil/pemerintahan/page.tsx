@@ -1,11 +1,14 @@
 import React from "react";
 import { Metadata } from "next";
 import { getPerangkat, getIdentitas } from "@/lib/db";
+import JsonLd from "@/components/JsonLd";
+import { buildPerson, buildBreadcrumb } from "@/lib/entity";
 
 export const metadata: Metadata = {
-  title: "Pemerintahan Desa - Desa Wringinanom",
+  title: "Pemerintahan Desa",
   description:
-    "Struktur organisasi, aparatur, BPD, dan kelembagaan pendukung Desa Wringinanom.",
+    "Struktur organisasi, jajaran perangkat desa, BPD, dan kelembagaan pendukung Desa Wringinanom, Kecamatan Tongas, Kabupaten Probolinggo, Jawa Timur. Kepala Desa: Saiful Rizal Habibi.",
+  alternates: { canonical: "/profil/pemerintahan" },
 };
 
 export default async function PemerintahanPage() {
@@ -21,6 +24,22 @@ export default async function PemerintahanPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-8 mt-16 md:mt-16 pb-20 md:pb-32 relative">
+      <JsonLd
+        data={buildBreadcrumb([
+          { name: "Beranda", url: "/" },
+          { name: "Profil Desa", url: "/profil" },
+          { name: "Pemerintahan" },
+        ])}
+      />
+      {kadesData && (
+        <JsonLd
+          data={buildPerson({
+            name: kadesData.nama,
+            jobTitle: `Kepala Desa Wringinanom, Kecamatan Tongas, Kabupaten Probolinggo`,
+            fotoUrl: kadesData.fotoUrl,
+          })}
+        />
+      )}
       {/* Page Header */}
       <header className="mb-10 md:mb-12 text-center max-w-4xl mx-auto pt-4">
         <div className="inline-block bg-tertiary-container text-on-tertiary-container px-3 md:px-4 py-1.5 rounded-full text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase mb-4 md:mb-6 font-label">

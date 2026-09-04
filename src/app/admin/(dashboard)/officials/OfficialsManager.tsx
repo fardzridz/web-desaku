@@ -2,6 +2,7 @@
 
 import React, { useState, useActionState } from "react";
 import { PerangkatItem } from "@/lib/db";
+import { webpifyInput } from "@/lib/webp";
 import { saveOfficialAction, deleteOfficialAction } from "./actions";
 
 export default function OfficialsManager({
@@ -32,10 +33,11 @@ export default function OfficialsManager({
     setImagePreview(null);
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const url = URL.createObjectURL(file);
+      const converted = await webpifyInput(e.currentTarget);
+      const url = URL.createObjectURL(converted || file);
       setImagePreview(url);
     }
   };

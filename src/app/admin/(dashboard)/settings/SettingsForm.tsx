@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { type IdentitasData } from "@/lib/db";
+import { webpifyInput } from "@/lib/webp";
 import { saveIdentitasAction } from "./actions";
 
 // Custom SVG Icons
@@ -40,10 +41,11 @@ export default function SettingsForm({ initialData }: { initialData: IdentitasDa
 
   const [previewFoto, setPreviewFoto] = useState<string>(initialData.logoDesaUrl || "");
 
-  const handleFotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setPreviewFoto(URL.createObjectURL(file));
+      const converted = await webpifyInput(e.currentTarget);
+      setPreviewFoto(URL.createObjectURL(converted || file));
     }
   };
 
