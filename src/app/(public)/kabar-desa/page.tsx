@@ -19,9 +19,8 @@ export default async function KabarDesaPage({
     getIdentitas(),
   ]);
 
-  // Kita balik array-nya agar berita yang "terakhir di tulis" (posisi terbawah di sheet) 
-  // akan naik menjadi urutan nomor 1 di website.
-  const beritaData = [...beritaDataRaw].reverse();
+  // getBerita() sudah mengembalikan berita terbaru dulu (sort by tanggal DESC)
+  const beritaData = beritaDataRaw;
 
   // Featured is the very latest article
   const featuredBerita = beritaData.length > 0 ? beritaData[0] : null;
