@@ -1,8 +1,11 @@
 import { getIdentitas } from "@/lib/db";
 import { Mail, Phone, MapPin, Clock, MessageSquare } from "lucide-react";
+import type { Metadata } from "next";
+import BreadcrumbJsonLd from "@/components/BreadcrumbJsonLd";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Kontak & Aspirasi",
+  alternates: { canonical: "/kontak" },
 };
 
 // Custom SVG Icons
@@ -156,6 +159,7 @@ export default async function KontakPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-8 mt-6 md:mt-8 pb-20 md:pb-32">
+      <BreadcrumbJsonLd items={[{ name: "Beranda", url: "/" }, { name: "Kontak & Aspirasi" }]} />
       {/* Page Header */}
       <header className="mb-10 md:mb-16">
         <div className="inline-block bg-tertiary-container text-on-tertiary-container px-3 py-1 rounded-lg text-[10px] font-bold tracking-[0.2em] uppercase mb-4 font-label">

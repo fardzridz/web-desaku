@@ -2,9 +2,11 @@ import AdminLayoutWrapper from "@/components/AdminLayoutWrapper";
 import { getIdentitas, getAkunByEmailSafe } from "@/lib/db";
 import { getAdminSession } from "@/lib/adminAuth";
 import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Admin Dashboard",
+  robots: { index: false, follow: false },
 };
 
 export default async function DashboardLayout({

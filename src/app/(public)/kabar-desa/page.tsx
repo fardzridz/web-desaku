@@ -1,9 +1,25 @@
 import { getBerita, getIdentitas } from "@/lib/db";
 import Link from "next/link";
+import type { Metadata } from "next";
+import BreadcrumbJsonLd from "@/components/BreadcrumbJsonLd";
 
-export const metadata = {
-  title: "Kabar Desa",
-};
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}): Promise<Metadata> {
+  const resolved = await searchParams;
+  const page = Number(resolved?.page) || 1;
+
+  return {
+    title: "Kabar Desa",
+    description:
+      "Berita, pengumuman, dan warta resmi Pemerintah Desa Wringinanom, Kecamatan Tongas, Kabupaten Probolinggo, Jawa Timur.",
+    alternates: {
+      canonical: page > 1 ? `/kabar-desa?page=${page}` : "/kabar-desa",
+    },
+  };
+}
 
 export default async function KabarDesaPage({
   searchParams,
@@ -41,6 +57,7 @@ export default async function KabarDesaPage({
 
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-8 mt-6 md:mt-8 pb-20 md:pb-32">
+      <BreadcrumbJsonLd items={[{ name: "Beranda", url: "/" }, { name: "Kabar Desa" }]} />
       {/* Page Header */}
       <header className="mb-10 md:mb-16">
         <div className="inline-block bg-tertiary-container text-on-tertiary-container px-3 py-1 rounded-lg text-[10px] font-bold tracking-[0.2em] uppercase mb-4 font-label">

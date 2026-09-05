@@ -142,6 +142,39 @@ export default async function PublicLayout({
                 </li>
                 <li>
                   <Link
+                    href="/layanan"
+                    className="hover:text-primary transition-colors flex items-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-[1rem]">
+                      chevron_right
+                    </span>{" "}
+                    Layanan Surat-Menyurat
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/kabar-desa"
+                    className="hover:text-primary transition-colors flex items-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-[1rem]">
+                      chevron_right
+                    </span>{" "}
+                    Kabar Desa
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/data-warga"
+                    className="hover:text-primary transition-colors flex items-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-[1rem]">
+                      chevron_right
+                    </span>{" "}
+                    Data Warga
+                  </Link>
+                </li>
+                <li>
+                  <Link
                     href="/kontak"
                     className="hover:text-primary transition-colors flex items-center gap-2"
                   >

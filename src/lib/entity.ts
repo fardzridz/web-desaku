@@ -103,6 +103,28 @@ export function buildGovernmentOrganization(identitas?: {
       postalCode: REGION_CODES.postalCode,
       addressCountry: NAP.country,
     },
+    contactPoint: [
+      {
+        "@type": "ContactPoint",
+        contactType: "customer service",
+        name: "Pengaduan & Layanan Desa",
+        telephone: identitas?.noWa ? `+${String(identitas.noWa).replace(/\D/g, "")}` : undefined,
+        email: identitas?.email || undefined,
+        areaServed: "ID",
+        availableLanguage: ["id"],
+      },
+    ],
+    /* Koordinat kantor desa — memperkuat sinyal local SEO & Knowledge Graph */
+    location: {
+      "@type": "Place",
+      name: "Kantor Pemerintah Desa Wringinanom",
+      geo: {
+        "@type": "GeoCoordinates",
+        latitude: GEO_OFFICE.latitude,
+        longitude: GEO_OFFICE.longitude,
+      },
+      hasMap: `https://www.google.com/maps/search/?api=1&query=${GEO_OFFICE.latitude},${GEO_OFFICE.longitude}`,
+    },
     areaServed: { "@id": `${SITE_URL}/#village` },
     parentOrganization: {
       "@type": "GovernmentOrganization",
@@ -143,6 +165,7 @@ export function buildVillageAdministrativeArea() {
       longitude: GEO_VILLAGE.longitude,
       elevationMeters: 32,
     },
+    hasMap: `https://www.google.com/maps/search/?api=1&query=${GEO_VILLAGE.latitude},${GEO_VILLAGE.longitude}`,
     containedInPlace: [
       {
         "@type": "AdministrativeArea",
@@ -184,6 +207,12 @@ export function buildGlobalGraph(identitas?: {
         "@id": `${SITE_URL}/#website`,
         url: SITE_URL,
         name: `${ENTITY.name} — Portal Resmi Pemerintah Desa`,
+        alternateName: [
+          "Portal Desa Wringinanom",
+          "Desa Wringinanom Tongas",
+          "Wringinanom Probolinggo",
+          "Website Desa Wringinanom",
+        ],
         inLanguage: ENTITY.inLanguage,
         publisher: { "@id": org["@id"] },
         about: { "@id": village["@id"] },

@@ -416,9 +416,20 @@ async function getIdentitasUncached(): Promise<IdentitasData> {
     facebookUrl: row?.facebook_url || "",
     instagramUrl: row?.instagram_url || "",
     tiktokUrl: row?.tiktok_url || "",
-    websiteUrl: row?.website_url || "",
+    websiteUrl: normalizeWebsiteUrl(row?.website_url || ""),
     thumbnailUrl: row?.thumbnail_url || "",
   };
+}
+
+/**
+ * Paksa URL situs selalu https:// tanpa trailing slash.
+ * Sumber semua canonical/OG/sitemap/robots — tidak boleh ada http yang lolos.
+ */
+function normalizeWebsiteUrl(url: string): string {
+  if (!url) return "";
+  const trimmed = url.trim().replace(/\/+$/, "");
+  if (/^http:\/\//i.test(trimmed)) return `https://${trimmed.slice(7)}`;
+  return trimmed;
 }
 
 export const getIdentitas = unstable_cache(

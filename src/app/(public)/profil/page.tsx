@@ -1,7 +1,8 @@
 import { getPerangkat, getIdentitas } from "@/lib/db";
-import heroImg from "@/assets/images/hero.jpg";
+import heroImg from "@/assets/images/hero.webp";
 import ProfilAccordion from "./ProfilAccordion";
 import JsonLd from "@/components/JsonLd";
+import BreadcrumbJsonLd from "@/components/BreadcrumbJsonLd";
 import { buildFaqPage, REGION_CODES, GEO_VILLAGE } from "@/lib/entity";
 import type { Metadata } from "next";
 
@@ -68,6 +69,7 @@ export default async function ProfilPage() {
 
   return (
     <>
+      <BreadcrumbJsonLd items={[{ name: "Beranda", url: "/" }, { name: "Profil Desa" }]} />
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-4 md:px-8 mt-4 md:mt-8 mb-16 md:mb-24">
         <div className="relative rounded-3xl md:rounded-[2.5rem] overflow-hidden min-h-[300px] md:min-h-[400px] flex items-center bg-black">
@@ -99,8 +101,10 @@ export default async function ProfilPage() {
             <div className="aspect-[4/5] rounded-[2rem] overflow-hidden shadow-2xl rotate-0 md:rotate-2">
               <img
                 className="w-full h-full object-cover"
-                alt="Traditional Heritage"
-                src="https://i.ibb.co.com/wFKWKFsb/1000364727.jpg"
+                alt="Warisan budaya dan sejarah Desa Wringinanom, Kecamatan Tongas, Kabupaten Probolinggo"
+                src="/images/warisan-budaya-wringinanom.webp"
+                width={1080}
+                height={1080}
               />
             </div>
             <div className="absolute bottom-4 left-0 md:-bottom-6 md:-left-6 bg-surface-container-lowest p-4 md:p-6 rounded-xl md:rounded-2xl shadow-xl max-w-[150px] md:max-w-[200px] -rotate-3 border border-outline-variant/30">

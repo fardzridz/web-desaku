@@ -3,8 +3,13 @@ import {
   getPerangkat,
 } from "@/lib/db";
 import Link from "next/link";
-import heroImg from "@/assets/images/hero.jpg";
+import heroImg from "@/assets/images/hero.webp";
 import AnimatedCounter from "@/components/AnimatedCounter";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 export default async function Home() {
   const [beritaData, perangkatData] =
@@ -92,8 +97,10 @@ export default async function Home() {
         {/* Foto Kades & Ibu Kades */}
         <div className="relative md:absolute md:bottom-0 md:bg-transparent md:right-0 xl:right-16 z-0 md:z-10 w-full flex justify-center md:justify-end mt-auto pointer-events-none self-center md:self-end overflow-hidden md:overflow-visible">
           <img
-            src="https://i.ibb.co.com/4rc0HWs/177597dfdfdfdfdfdf5443209.png"
+            src="/images/kepala-desa-ibu-kades.webp"
             alt="Kepala Desa dan Ibu Kades Desa Wringinanom, Tongas, Probolinggo"
+            width={966}
+            height={1092}
             className="w-full md:w-auto h-[380px] sm:h-[450px] md:h-[80vh] md:max-h-[850px] object-cover md:object-contain object-top md:object-bottom drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] md:mr-16 scale-[1.15] md:scale-100 origin-top md:origin-bottom mt-4 md:mt-0"
           />
         </div>
@@ -217,8 +224,10 @@ export default async function Home() {
             <div className="group rounded-[2rem] overflow-hidden bg-surface-container border border-outline-variant/30 shadow-sm hover:shadow-xl transition-all">
               <div className="h-64 overflow-hidden relative">
                 <img
-                  src="https://i.ibb.co.com/sJgXbzSR/download-12.jpg"
+                  src="/images/pertanian-sawah-wringinanom.webp"
                   alt="Pertanian unggulan Desa Wringinanom, Tongas, Probolinggo"
+                  width={375}
+                  height={500}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
                 <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-3 rounded-xl shadow-lg">
@@ -245,8 +254,10 @@ export default async function Home() {
             <div className="group rounded-[2rem] overflow-hidden bg-surface-container border border-outline-variant/30 shadow-sm hover:shadow-xl transition-all">
               <div className="h-64 overflow-hidden relative">
                 <img
-                  src="https://i.ibb.co.com/cfHg02F/Usaha-Ternak-Sapi-Untuk-Pemula-dan-Menguntungkan-100.jpg"
+                  src="/images/peternakan-wringinanom.webp"
                   alt="Peternakan berkembang Desa Wringinanom, Tongas, Probolinggo"
+                  width={736}
+                  height={431}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
                 <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-3 rounded-xl shadow-lg">
@@ -273,8 +284,10 @@ export default async function Home() {
             <div className="group rounded-[2rem] overflow-hidden bg-surface-container border border-outline-variant/30 shadow-sm hover:shadow-xl transition-all">
               <div className="h-64 overflow-hidden relative">
                 <img
-                  src="https://i.ibb.co.com/5WyS0rJC/Food-and-Agriculture-Benchmark-WBA.jpg"
+                  src="/images/umkm-wringinanom.webp"
                   alt="Geliat UMKM Desa Wringinanom, Tongas, Probolinggo"
+                  width={736}
+                  height={736}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
                 <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-3 rounded-xl shadow-lg">

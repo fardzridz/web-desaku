@@ -1,9 +1,10 @@
 import Link from "next/link";
 import AnimatedCounter from "@/components/AnimatedCounter";
-import heroImg from "@/assets/images/hero.jpg";
+import heroImg from "@/assets/images/hero.webp";
 import { getPerangkat, getIdentitas } from "@/lib/db";
 import { DISAMBIGUATION_TEXT, REGION_CODES, NAP, GEO_VILLAGE, EXTERNAL_REFS } from "@/lib/entity";
 import type { Metadata } from "next";
+import BreadcrumbJsonLd from "@/components/BreadcrumbJsonLd";
 
 export const metadata: Metadata = {
   title: "Profil Umum",
@@ -19,6 +20,7 @@ export default async function TentangDesaPage() {
   const namaDesa = identitasData.namaDesa || "Desa Kita";
   return (
     <>
+      <BreadcrumbJsonLd items={[{ name: "Beranda", url: "/" }, { name: "Profil", url: "/profil" }, { name: "Tentang" }]} />
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-4 md:px-8 mt-16 md:mt-16 mb-8 md:mb-16">
         <div className="relative rounded-3xl md:rounded-[2.5rem] overflow-hidden min-h-[300px] md:min-h-[400px] flex items-center bg-black">
@@ -113,7 +115,9 @@ export default async function TentangDesaPage() {
               <img
                 className="w-full h-full object-cover"
                 alt="Warisan budaya dan sejarah Desa Wringinanom, Kecamatan Tongas, Kabupaten Probolinggo"
-                src="https://i.ibb.co.com/wFKWKFsb/1000364727.jpg"
+                src="/images/warisan-budaya-wringinanom.webp"
+                width={1080}
+                height={1080}
               />
             </div>
             <div className="absolute bottom-4 left-0 md:-bottom-6 md:-left-6 bg-surface-container-lowest p-4 md:p-6 rounded-xl md:rounded-2xl shadow-xl max-w-[150px] md:max-w-[200px] -rotate-3 border border-outline-variant/30">

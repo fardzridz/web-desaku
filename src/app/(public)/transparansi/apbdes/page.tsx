@@ -1,11 +1,13 @@
 import { Metadata } from "next";
 import { getApbdes } from "@/lib/db";
 import ApbdesClientView from "@/components/ApbdesClientView";
+import BreadcrumbJsonLd from "@/components/BreadcrumbJsonLd";
 
 export const metadata: Metadata = {
   title: "Transparansi APBDes Wringinanom - Wringinanom",
   description:
     "Laporan Realisasi Anggaran Pendapatan dan Belanja Desa (APBDes) Wringinanom yang transparan dan akuntabel.",
+  alternates: { canonical: "/transparansi/apbdes" },
 };
 
 export default async function ApbdesPage() {
@@ -14,6 +16,7 @@ export default async function ApbdesPage() {
     if (!fetchedData || fetchedData.length === 0) {
       return (
         <div className="max-w-7xl mx-auto px-4 md:px-8 mt-32 pb-32 text-center">
+          <BreadcrumbJsonLd items={[{ name: "Beranda", url: "/" }, { name: "Transparansi APBDes" }]} />
           <span className="material-symbols-outlined text-7xl text-stone-300 mb-6 block">
             folder_off
           </span>
@@ -33,5 +36,10 @@ export default async function ApbdesPage() {
 
   const availableYears = sortedData.map((d) => d.tahun_anggaran);
 
-  return <ApbdesClientView initialData={sortedData} availableYears={availableYears} />;
+  return (
+    <>
+      <BreadcrumbJsonLd items={[{ name: "Beranda", url: "/" }, { name: "Transparansi APBDes" }]} />
+      <ApbdesClientView initialData={sortedData} availableYears={availableYears} />
+    </>
+  );
 }

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import sanitizeHtml from "sanitize-html";
 import JsonLd from "@/components/JsonLd";
-import { buildBreadcrumb, buildNewsArticle, SITE_URL } from "@/lib/entity";
+import { buildBreadcrumb, buildNewsArticle, parseTanggalIndo, SITE_URL } from "@/lib/entity";
 import type { Metadata } from "next";
 
 // Whitelist tag HTML yang diizinkan dari editor konten berita.
@@ -32,10 +32,13 @@ export async function generateMetadata({
 
   if (!berita) return { title: "Berita Tidak Ditemukan" };
 
-  const judulSeo = `${berita.judul} | Desa Wringinanom, Tongas, Probolinggo`;
+  const identitasData = await getIdentitas();
+  const namaDesa = identitasData?.namaDesa || "Desa Wringinanom";
+  const judulSeo = `${berita.judul} | ${namaDesa}, Tongas, Probolinggo`;
   const desc =
     berita.ringkasan ||
     `Berita resmi dari Pemerintah Desa Wringinanom, Kecamatan Tongas, Kabupaten Probolinggo, Jawa Timur.`;
+  const publishedDate = parseTanggalIndo(berita.tanggal) || undefined;
 
   return {
     title: judulSeo,
@@ -46,9 +49,10 @@ export async function generateMetadata({
       title: judulSeo,
       description: desc,
       url: `${SITE_URL}/kabar-desa/${berita.slug}`,
-      siteName: "Desa Wringinanom",
+      siteName: namaDesa,
       locale: "id_ID",
-      publishedTime: undefined,
+      publishedTime: publishedDate?.toISOString(),
+      modifiedTime: publishedDate?.toISOString(),
       images: berita.fotoUrl
         ? [{ url: berita.fotoUrl, alt: `Foto berita: ${berita.judul} — Desa Wringinanom, Tongas, Probolinggo` }]
         : undefined,

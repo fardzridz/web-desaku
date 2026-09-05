@@ -1,10 +1,12 @@
 import React from "react";
 import { Metadata } from "next";
+import BreadcrumbJsonLd from "@/components/BreadcrumbJsonLd";
 
 export const metadata: Metadata = {
   title: "Sejarah Desa - Desa Wringinanom",
   description:
     "Menelusuri jejak asal-usul dan sejarah kepemimpinan Desa Wringinanom dari masa ke masa.",
+  alternates: { canonical: "/profil/sejarah" },
 };
 
 export default function SejarahDesaPage() {
@@ -50,6 +52,7 @@ export default function SejarahDesaPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-8 mt-16 md:mt-16 pb-20 md:pb-32">
+      <BreadcrumbJsonLd items={[{ name: "Beranda", url: "/" }, { name: "Profil", url: "/profil" }, { name: "Sejarah Desa" }]} />
       {/* Page Header */}
       <header className="mb-12 md:mb-20 text-center max-w-4xl mx-auto">
         <div className="inline-block bg-tertiary-container text-on-tertiary-container px-3 md:px-4 py-1.5 rounded-full text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase mb-4 md:mb-6 font-label">

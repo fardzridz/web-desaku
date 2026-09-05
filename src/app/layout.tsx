@@ -8,6 +8,17 @@ import JsonLd from "@/components/JsonLd";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope" });
 
+async function getGlobalGraphData() {
+  const identitas = await getIdentitas();
+  return buildGlobalGraph({
+    email: identitas?.email,
+    noWa: identitas?.noWa,
+    logoDesaUrl: identitas?.logoDesaUrl,
+    facebookUrl: identitas?.facebookUrl,
+    instagramUrl: identitas?.instagramUrl,
+  });
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   const identitas = await getIdentitas();
   const namaDesa = identitas?.namaDesa || "Desa Wringinanom";
@@ -31,9 +42,6 @@ export async function generateMetadata(): Promise<Metadata> {
       "website desa Wringinanom",
       "layanan desa Probolinggo",
     ],
-    alternates: {
-      canonical: "/",
-    },
     robots: {
       index: true,
       follow: true,
@@ -50,14 +58,20 @@ export async function generateMetadata(): Promise<Metadata> {
       description: desc,
       url: identitas?.websiteUrl || "https://portal-wringinanom.web.id",
       siteName: namaDesa,
-      images: [
-        {
-          url: identitas?.thumbnailUrl || identitas?.logoDesaUrl || "https://placehold.co/1200x630/064e3b/ffffff?text=Portal+Desa",
-          width: 1200,
-          height: 630,
-          alt: `Portal Resmi ${namaDesa}, Kecamatan Tongas, Kabupaten Probolinggo, Jawa Timur`,
-        },
-      ],
+      // Kalau identitas punya thumbnail/logo pakai itu; kalau tidak,
+      // file-convention opengraph-image.tsx yang dipakai (fallback branding).
+      ...(identitas?.thumbnailUrl || identitas?.logoDesaUrl
+        ? {
+            images: [
+              {
+                url: identitas.thumbnailUrl || identitas.logoDesaUrl!,
+                width: 1200,
+                height: 630,
+                alt: `Portal Resmi ${namaDesa}, Kecamatan Tongas, Kabupaten Probolinggo, Jawa Timur`,
+              },
+            ],
+          }
+        : {}),
       locale: "id_ID",
       type: "website",
     },
@@ -65,17 +79,25 @@ export async function generateMetadata(): Promise<Metadata> {
       card: "summary_large_image",
       title: `${namaDesa} — Tongas, Probolinggo | Portal Resmi`,
       description: desc,
-      images: [identitas?.thumbnailUrl || identitas?.logoDesaUrl || "https://placehold.co/1200x630/064e3b/ffffff?text=Portal+Desa"],
+      ...(identitas?.thumbnailUrl || identitas?.logoDesaUrl
+        ? { images: [identitas.thumbnailUrl || identitas.logoDesaUrl!] }
+        : {}),
     },
-    icons: {
-      icon: identitas?.logoDesaUrl || "/favicon.ico",
-      shortcut: identitas?.logoDesaUrl || "/favicon.ico",
-      apple: identitas?.logoDesaUrl || "/favicon.ico",
-    },
+    // Logo dinamis dari identitas; kalau kosong, biarkan file-convention
+    // (favicon.ico / icon.svg / apple-icon.png) yang mengisi <link rel="icon">.
+    ...(identitas?.logoDesaUrl
+      ? {
+          icons: {
+            icon: identitas.logoDesaUrl,
+            shortcut: identitas.logoDesaUrl,
+            apple: identitas.logoDesaUrl,
+          },
+        }
+      : {}),
   };
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -84,7 +106,7 @@ export default function RootLayout({
     <html lang="id">
       <head>
         <meta name="referrer" content="no-referrer" />
-        <JsonLd data={buildGlobalGraph()} />
+        <JsonLd data={await getGlobalGraphData()} />
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
         <style dangerouslySetInnerHTML={{__html: `
           .material-symbols-outlined {

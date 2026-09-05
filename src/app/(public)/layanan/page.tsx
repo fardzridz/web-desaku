@@ -1,8 +1,11 @@
 import { getLayanan, getIdentitas } from "@/lib/db";
 import Link from "next/link";
+import type { Metadata } from "next";
+import BreadcrumbJsonLd from "@/components/BreadcrumbJsonLd";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Layanan Publik",
+  alternates: { canonical: "/layanan" },
 };
 
 type PageProps = {
@@ -37,6 +40,7 @@ export default async function LayananPage(props: PageProps) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-8 mt-6 md:mt-8 pb-20 md:pb-32">
+      <BreadcrumbJsonLd items={[{ name: "Beranda", url: "/" }, { name: "Layanan Publik" }]} />
       {/* Hero Header */}
       <header className="mb-12 md:mb-24 flex flex-col md:flex-row gap-8 items-center justify-between">
         <div className="flex-1">

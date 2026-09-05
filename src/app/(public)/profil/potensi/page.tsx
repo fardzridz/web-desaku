@@ -1,14 +1,17 @@
 import { Metadata } from "next";
+import BreadcrumbJsonLd from "@/components/BreadcrumbJsonLd";
 
 export const metadata: Metadata = {
   title: "Potensi Desa - Desa Wringinanom",
   description:
     "Data potensi kekayaan alam, pertanian, peternakan, dan UMKM Desa Wringinanom.",
+  alternates: { canonical: "/profil/potensi" },
 };
 
 export default function PotensiDesaPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-8 mt-16 md:mt-16 pb-20 md:pb-32">
+      <BreadcrumbJsonLd items={[{ name: "Beranda", url: "/" }, { name: "Profil", url: "/profil" }, { name: "Potensi Desa" }]} />
       {/* Page Header */}
       <header className="mb-16 md:mb-24 text-center max-w-4xl mx-auto">
         <div className="inline-block bg-tertiary-container text-on-tertiary-container px-3 md:px-4 py-1.5 rounded-full text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase mb-4 md:mb-6 font-label">
@@ -57,7 +60,7 @@ export default function PotensiDesaPage() {
           </div>
           <div className="order-1 lg:order-2 h-[400px] md:h-[500px] w-full rounded-[2.5rem] overflow-hidden shadow-2xl relative group">
              <div className="absolute inset-0 bg-primary/10 group-hover:bg-transparent transition-colors z-10 w-full h-full border-4 border-surface shadow-inner"></div>
-             <img src="https://i.ibb.co.com/sJgXbzSR/download-12.jpg" alt="Pertanian Sawah Wringinanom" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"/>
+             <img src="/images/pertanian-sawah-wringinanom.webp" alt="Pertanian Sawah Wringinanom" width={375} height={500} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"/>
           </div>
         </section>
 
@@ -65,7 +68,7 @@ export default function PotensiDesaPage() {
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-16 items-center">
           <div className="h-[400px] md:h-[500px] w-full rounded-[2.5rem] overflow-hidden shadow-2xl relative group">
              <div className="absolute inset-0 bg-amber-900/10 group-hover:bg-transparent transition-colors z-10 w-full border-4 border-surface shadow-inner"></div>
-             <img src="https://i.ibb.co.com/cfHg02F/Usaha-Ternak-Sapi-Untuk-Pemula-dan-Menguntungkan-100.jpg" alt="Peternakan Wringinanom" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"/>
+             <img src="/images/peternakan-wringinanom.webp" alt="Peternakan Wringinanom" width={736} height={431} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"/>
           </div>
           <div className="space-y-6">
              <div className="flex items-center gap-4 mb-4">
